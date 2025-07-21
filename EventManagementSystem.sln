@@ -1,0 +1,74 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36212.18 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{E27D12D7-11F2-459D-A72C-5415B907F2AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{F4B0A1EF-B682-48EE-9E67-AEBF6E393B6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.API", "EventManagementSystem\Presentation\EventManagementSystem.API\EventManagementSystem.API.csproj", "{F02307DD-C7DA-4FBA-9399-508E7FC135C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{B39D726E-346B-4472-8C04-B7ABFF06E47C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{92ED3589-3381-4758-8F50-29F0B6D42617}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{136D8FB0-835E-4314-90C9-4602FF1BCC9C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{6ABE8FC5-112A-48C7-881F-A251B54DDAA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Application", "EventManagementSystem\Core\Application\EventManagementSystem.Application\EventManagementSystem.Application.csproj", "{73D23FD7-5AAA-4C6A-87A8-854F99498EE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Domain", "EventManagementSystem\Core\Domain\EventManagementSystem.Domain\EventManagementSystem.Domain.csproj", "{A6F3250B-A358-4B3A-AAAB-A63847D39F8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Identity", "EventManagementSystem\Infrastructure\Identity\EventManagementSystem.Identity\EventManagementSystem.Identity.csproj", "{EB5DD210-5F28-49C1-B37E-789986717EA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Persistence", "EventManagementSystem\Infrastructure\Persistence\EventManagementSystem.Persistence\EventManagementSystem.Persistence.csproj", "{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F02307DD-C7DA-4FBA-9399-508E7FC135C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02307DD-C7DA-4FBA-9399-508E7FC135C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02307DD-C7DA-4FBA-9399-508E7FC135C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02307DD-C7DA-4FBA-9399-508E7FC135C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73D23FD7-5AAA-4C6A-87A8-854F99498EE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73D23FD7-5AAA-4C6A-87A8-854F99498EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73D23FD7-5AAA-4C6A-87A8-854F99498EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73D23FD7-5AAA-4C6A-87A8-854F99498EE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB5DD210-5F28-49C1-B37E-789986717EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB5DD210-5F28-49C1-B37E-789986717EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB5DD210-5F28-49C1-B37E-789986717EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB5DD210-5F28-49C1-B37E-789986717EA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F02307DD-C7DA-4FBA-9399-508E7FC135C5} = {F4B0A1EF-B682-48EE-9E67-AEBF6E393B6A}
+		{B39D726E-346B-4472-8C04-B7ABFF06E47C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{92ED3589-3381-4758-8F50-29F0B6D42617} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{136D8FB0-835E-4314-90C9-4602FF1BCC9C} = {E27D12D7-11F2-459D-A72C-5415B907F2AB}
+		{6ABE8FC5-112A-48C7-881F-A251B54DDAA5} = {E27D12D7-11F2-459D-A72C-5415B907F2AB}
+		{73D23FD7-5AAA-4C6A-87A8-854F99498EE0} = {B39D726E-346B-4472-8C04-B7ABFF06E47C}
+		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B} = {92ED3589-3381-4758-8F50-29F0B6D42617}
+		{EB5DD210-5F28-49C1-B37E-789986717EA6} = {136D8FB0-835E-4314-90C9-4602FF1BCC9C}
+		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7} = {6ABE8FC5-112A-48C7-881F-A251B54DDAA5}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A0C83417-96C1-4D0A-A1BD-E09AA2881AEB}
+	EndGlobalSection
+EndGlobal
