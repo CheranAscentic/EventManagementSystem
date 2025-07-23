@@ -1,4 +1,5 @@
 using EventManagementSystem.API.Extensions;
+using EventManagementSystem.API.Middleware;
 using EventManagementSystem.Application.Interfaces;
 using EventManagementSystem.Application.Usecases.Authentication.Login;
 using EventManagementSystem.Domain.Models;
@@ -39,7 +40,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 });
 
 // Register IdentityDbContext and Identity
-builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options => 
+builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -67,6 +68,9 @@ if (app.Environment.IsDevelopment())
     });
     app.MapOpenApi();
 }
+
+// Add global exception handler BEFORE other middleware
+app.UseMiddleware<GlobalExceptionHandler>();
 
 app.RegisterAllEndpointGroups();
 
