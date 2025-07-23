@@ -1,14 +1,9 @@
-﻿using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Domain.Models;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventManagementSystem.Identity.Services
+﻿namespace EventManagementSystem.Identity.Services
 {
+    using EventManagementSystem.Application.Interfaces;
+    using EventManagementSystem.Domain.Models;
+    using Microsoft.AspNetCore.Identity;
+
     public class AppUserService : IAppUserService
     {
         private readonly UserManager<AppUser> userManager;
@@ -25,22 +20,29 @@ namespace EventManagementSystem.Identity.Services
             var user = new AppUser
             {
                 UserName = userName,
-                Email = email
+                Email = email,
             };
-            var result = await userManager.CreateAsync(user, password);
+
+            var result = await this.userManager.CreateAsync(user, password);
+
             if (result.Succeeded)
             {
-                return user.Id;
+                return user.Id.ToString();
             }
+
             throw new System.Exception(string.Join("; ", result.Errors));
         }
 
-        public async Task<AppUser> LoginAsync(string email, string password)
+        public async Task<AppUser?> LoginAsync(string email, string password)
         {
-            var user = await userManager.FindByEmailAsync(email);
-            if (user == null) return null;
+            var user = await this.userManager.FindByEmailAsync(email);
 
-            var signInResult = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent: false, lockoutOnFailure: false);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var signInResult = await this.signInManager.PasswordSignInAsync(user.UserName, password, isPersistent: false, lockoutOnFailure: false);
             if (signInResult.Succeeded)
             {
                 return user;
@@ -48,40 +50,58 @@ namespace EventManagementSystem.Identity.Services
             return null;
         }
 
-        public async Task<AppUser> GetUserAsync(string userId)
+        public async Task<AppUser?> GetUserAsync(string userId)
         {
-            return await userManager.FindByIdAsync(userId);
+            return await this.userManager.FindByIdAsync(userId);
         }
 
-        public async Task<AppUser> DeleteUserAsync(string userId)
+        public async Task<AppUser?> DeleteUserAsync(string userId)
         {
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null) return null;
+            var user = await this.userManager.FindByIdAsync(userId);
 
-            var result = await userManager.DeleteAsync(user);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var result = await this.userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
                 return user;
             }
-            throw new System.Exception(string.Join("; ", result.Errors));
+
+            throw new Exception(string.Join("; ", result.Errors));
         }
 
-        public async Task<AppUser> UpdateUserAsync(string userId, string userName, string firstName, string lastName, string phoneNumber)
+        public async Task<AppUser?> UpdateUserAsync(Guid userId, string userName, string firstName, string lastName, string phoneNumber)
         {
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null) return null;
+            var user = await this.userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return null;
+            }
 
             user.UserName = userName;
             user.FirstName = firstName;
             user.LastName = lastName;
             user.PhoneNumber = phoneNumber;
 
-            var result = await userManager.UpdateAsync(user);
+            var result = await this.userManager.UpdateAsync(user);
+
             if (result.Succeeded)
             {
                 return user;
             }
-            throw new System.Exception(string.Join("; ", result.Errors));
+
+            throw new Exception(string.Join("; ", result.Errors));
+        }
+
+        public async Task<bool> CheckEmailExists(string email)
+        {
+            var user = await this.userManager.FindByEmailAsync(email);
+
+            return user == null ? false : true;
         }
     }
 }

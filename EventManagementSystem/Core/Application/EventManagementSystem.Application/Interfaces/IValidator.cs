@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventManagementSystem.Application.Interfaces
+﻿namespace EventManagementSystem.Application.Interfaces
 {
-    internal interface IValidator
+    using EventManagementSystem.Application.Common;
+    public interface IValidator<T>
     {
+        Task<ValidationResult> ValidateAsync(T request, CancellationToken cancellationToken = default);
     }
 }

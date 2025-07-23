@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EventManagementSystem.Application.Usecases.Authentication.Login
+namespace EventManagementSystem.Application.Usecases.User.DeleteUser
 {
-    internal class LoginQueryHandler
+    internal class DeleteUserCommandHandler
     {
     }
 }

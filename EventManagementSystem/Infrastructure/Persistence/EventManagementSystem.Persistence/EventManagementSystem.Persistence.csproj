@@ -6,4 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Application\EventManagementSystem.Application\EventManagementSystem.Application.csproj" />
+    <ProjectReference Include="..\..\..\Core\Domain\EventManagementSystem.Domain\EventManagementSystem.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
