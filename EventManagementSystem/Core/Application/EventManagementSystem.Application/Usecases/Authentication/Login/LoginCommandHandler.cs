@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace EventManagementSystem.Application.Usecases.Authentication.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<AppUser>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<LoginDTO>>
     {
         private readonly IAppUserService appUserService;
 
@@ -19,15 +19,24 @@ namespace EventManagementSystem.Application.Usecases.Authentication.Login
             this.appUserService = appUserService;
         }
 
-        public async Task<StandardResponseObject<AppUser>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
+        public async Task<StandardResponseObject<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
-            var userData = await this.appUserService.LoginAsync(command.Email, command.Password);
+            AppUser? userData = await this.appUserService.LoginAsync(command.Email, command.Password);
             if (userData == null)
             {
-                return StandardResponseObject<AppUser>.BadRequest("Invalid credentials", "Login failed");
+                return StandardResponseObject<LoginDTO>.BadRequest("Invalid credentials", "Login failed");
             }
 
-            return StandardResponseObject<AppUser>.Ok(userData, "Login successful");
+            LoginDTO loginDTO = new LoginDTO
+            {
+                Id = userData.Id,
+                Email = userData.Email,
+                FirstName = userData.FirstName,
+                LastName = userData.LastName,
+                Token = userData.Token // Assuming Token is part of the AppUser model
+            };
+
+            return StandardResponseObject<LoginDTO>.Ok(loginDTO, "Login successful");
         }
     }
 }
