@@ -7,7 +7,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.Login
     /// <summary>
     /// Represents a query to log in a user.
     /// </summary>
-    public class LoginCommand : IRequest<StandardResponseObject<AppUser>>
+    public class LoginCommand : IRequest<StandardResponseObject<LoginDTO>>
     {
         public string Email { get; }
         public string Password { get; }
