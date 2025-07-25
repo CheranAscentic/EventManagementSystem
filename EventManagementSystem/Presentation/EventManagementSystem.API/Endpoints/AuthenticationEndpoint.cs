@@ -22,7 +22,6 @@ namespace EventManagementSystem.API.Endpoints
                 .WithSummary("Logs in a user with email and password.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest);
-          
 
             auth.MapPost("/signup", HandleSignUp)
                 .WithName("SignUp")

@@ -31,6 +31,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.Login
             }
 
             var userToken = this.tokenService.CreateToken(userData);
+            var tokenExpiration = this.tokenService.GetTokenExpiration();
 
             LoginDTO loginDTO = new LoginDTO
             {
@@ -39,7 +40,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.Login
                 FirstName = userData.FirstName,
                 LastName = userData.LastName,
                 Token = userToken,
-                token
+                TokenExpiration = tokenExpiration,
             };
 
             return StandardResponseObject<LoginDTO>.Ok(loginDTO, "Login successful");

@@ -1,15 +1,25 @@
+using DotNetEnv;
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
+using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
 using EventManagementSystem.Application.Usecases.Authentication.Login;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+//Load in the .env(environment variables). before the buidler
+Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env file
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddOpenApi();
 
@@ -51,11 +61,27 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<IdentityDbContext>();
 
 // Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginCommandHandler>());
-
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
+});
 // Register AppUserService for IAppUserService
 builder.Services.AddScoped<IAppUserService, AppUserService>();
+// TokenService
+builder.Services.AddScoped<ITokenService, TokenService>();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+builder.Services.AddValidatorsFromAssemblyContaining<LoginCommand>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -73,6 +99,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.RegisterAllEndpointGroups();
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
