@@ -17,6 +17,14 @@
 
             this.RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Last name is required.");
+
+            this.RuleFor(x => x.UserName)
+                .NotEmpty().WithMessage("User name is required.")
+                .MinimumLength(3).WithMessage("User name must be at least 3 characters long.");
+
+            this.RuleFor(x => x.PhoneNumber)
+                .NotEmpty().WithMessage("Phone number is required.")
+                .Matches(@"^\+?\d{9,15}$").WithMessage("Phone number format is invalid. It should be 9 to 15 digits, optionally starting with '+'.");
         }
     }
 }
