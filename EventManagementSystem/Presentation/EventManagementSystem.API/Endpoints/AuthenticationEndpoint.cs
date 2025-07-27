@@ -5,7 +5,6 @@ using EventManagementSystem.Application.Usecases.Authentication.SignUp;
 using EventManagementSystem.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EventManagementSystem.API.Endpoints
 {
@@ -33,18 +32,29 @@ namespace EventManagementSystem.API.Endpoints
 
         private async Task<IResult> HandleLogin(
                 StandardRequestObject<LoginCommand> request,
-                [FromServices] IMediator mediator)
+                [FromServices] IMediator mediator,
+                [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
+            logger.LogInformation("Login request received. Email: {Email}", request.Data?.Email);
+
             var response = await mediator.Send(request.Data);
+
+            logger.LogInformation("Login response. Success: {Success}, Status: {Status}", response.Success, response.Status);
 
             return response.ToApiResult();
         }
 
         private async Task<IResult> HandleSignUp(
                 StandardRequestObject<SignUpCommand> request,
-                [FromServices] IMediator mediator)
+                [FromServices] IMediator mediator,
+                [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
+            logger.LogInformation("SignUp request received. Email: {Email}, FirstName: {FirstName}, LastName: {LastName}",
+                request.Data?.Email, request.Data?.FirstName, request.Data?.LastName);
+
             var response = await mediator.Send(request.Data);
+
+            logger.LogInformation("SignUp response. Success: {Success}, Status: {Status}", response.Success, response.Status);
 
             return response.ToApiResult();
         }

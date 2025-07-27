@@ -2,6 +2,7 @@
 using EventManagementSystem.Application.Interfaces;
 using EventManagementSystem.Domain.Models;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,17 +12,22 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
     public class SignUpCommandHandler : IRequestHandler<SignUpCommand, StandardResponseObject<AppUser>>
     {
         private readonly IAppUserService appUserService;
+        private readonly ILogger<SignUpCommandHandler> logger;
 
-        public SignUpCommandHandler(IAppUserService appUserService)
+        public SignUpCommandHandler(IAppUserService appUserService, ILogger<SignUpCommandHandler> logger)
         {
             this.appUserService = appUserService;
+            this.logger = logger;
         }
 
         public async Task<StandardResponseObject<AppUser>> Handle(SignUpCommand command, CancellationToken cancellationToken = default)
         {
+            logger.LogInformation("SignUp attempt for Email: {Email}", command.Email);
+
             // Check if email already exists
             if (await this.appUserService.CheckEmailExists(command.Email))
             {
+                logger.LogWarning("SignUp failed: Email already exists. Email: {Email}", command.Email);
                 return StandardResponseObject<AppUser>.BadRequest("Email already exists.");
             }
 
@@ -33,6 +39,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "SignUp failed for Email: {Email}", command.Email);
                 return StandardResponseObject<AppUser>.InternalError(ex.Message);
             }
 
@@ -40,6 +47,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             var user = await this.appUserService.GetUserAsync(userId);
             if (user == null)
             {
+                logger.LogError("SignUp failed: User creation failed for Email: {Email}", command.Email);
                 return StandardResponseObject<AppUser>.InternalError("User creation failed.");
             }
 
@@ -49,6 +57,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             // Optionally update user with these fields if your service supports it
             await this.appUserService.UpdateUserAsync(user.Id, user.UserName, user.FirstName, user.LastName, user.PhoneNumber);
 
+            logger.LogInformation("SignUp successful for Email: {Email}", command.Email);
             return StandardResponseObject<AppUser>.Created(user, "User created successfully.");
         }
     }

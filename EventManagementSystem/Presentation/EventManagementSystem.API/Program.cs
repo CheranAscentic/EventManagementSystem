@@ -8,8 +8,16 @@ using EventManagementSystem.Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddOpenApi();
 
@@ -56,7 +64,22 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Lo
 // Register AppUserService for IAppUserService
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 
+// Add this before builder.Build()
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy
+            .AllowAnyOrigin()      // Or specify origins with .WithOrigins("https://example.com")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
+
+// Place this before endpoint registration and after middleware
+app.UseCors("DefaultCorsPolicy");
 
 if (app.Environment.IsDevelopment())
 {
