@@ -17,12 +17,9 @@
 
         public string LastName { get; }
 
-        public SignUpCommand(string email, string password, string firstName, string lastName)
-        {
-            Email = email;
-            Password = password;
-            FirstName = firstName;
-            LastName = lastName;
-        }
+        public string UserName { get; }
+
+        public string PhoneNumber { get; }
+
     }
 }

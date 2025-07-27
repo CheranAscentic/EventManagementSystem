@@ -1,3 +1,4 @@
+using DotNetEnv;
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
 using EventManagementSystem.Application.Behavior;
@@ -12,6 +13,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
+
+//Load in the .env(environment variables). before the buidler
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,10 +66,15 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<IdentityDbContext>();
 
 // Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginCommandHandler>());
-
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
+});
 // Register AppUserService for IAppUserService
 builder.Services.AddScoped<IAppUserService, AppUserService>();
+// TokenService
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Ensure you have the FluentValidation.DependencyInjectionExtensions package installed
 // You can install it via NuGet Package Manager with the following command:
@@ -108,6 +117,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.RegisterAllEndpointGroups();
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

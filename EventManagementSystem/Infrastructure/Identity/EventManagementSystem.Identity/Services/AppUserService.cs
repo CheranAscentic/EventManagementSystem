@@ -47,11 +47,13 @@
                 return null;
             }
 
-            var signInResult = await this.signInManager.PasswordSignInAsync(user.UserName, password, isPersistent: false, lockoutOnFailure: false);
+            var signInResult = await this.signInManager.PasswordSignInAsync(user.UserName!, password, isPersistent: false, lockoutOnFailure: false);
+
             if (signInResult.Succeeded)
             {
                 return user;
             }
+
             return null;
         }
 

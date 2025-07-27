@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EventManagementSystem.Application.Usecases.Authentication.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<AppUser>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<LoginDTO>>
     {
         private readonly IAppUserService appUserService;
         private readonly ILogger<LoginCommandHandler> logger;
@@ -22,7 +22,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.Login
             this.logger = logger;
         }
 
-        public async Task<StandardResponseObject<AppUser>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
+        public async Task<StandardResponseObject<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
             this.logger.LogInformation("Attempting login for Email: {Email}", command.Email);
 

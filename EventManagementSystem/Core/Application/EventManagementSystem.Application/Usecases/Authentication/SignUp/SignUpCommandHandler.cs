@@ -35,7 +35,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             string userId;
             try
             {
-                userId = await this.appUserService.SignUpAsync(command.Email, command.Email, command.Password);
+                userId = await this.appUserService.SignUpAsync(command.UserName , command.Email, command.Password);
             }
             catch (Exception ex)
             {
@@ -54,6 +54,8 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             // Set additional properties if needed (FirstName, LastName)
             user.FirstName = command.FirstName;
             user.LastName = command.LastName;
+            user.PhoneNumber = command.PhoneNumber;
+
             // Optionally update user with these fields if your service supports it
             await this.appUserService.UpdateUserAsync(user.Id, user.UserName, user.FirstName, user.LastName, user.PhoneNumber);
 
