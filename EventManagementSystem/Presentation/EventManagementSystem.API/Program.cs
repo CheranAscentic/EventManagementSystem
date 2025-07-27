@@ -12,14 +12,19 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 //Load in the .env(environment variables). before the buidler
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file
-builder.Configuration.AddEnvironmentVariables();
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddOpenApi();
 
@@ -71,18 +76,31 @@ builder.Services.AddScoped<IAppUserService, AppUserService>();
 // TokenService
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// CORS
+// Ensure you have the FluentValidation.DependencyInjectionExtensions package installed
+// You can install it via NuGet Package Manager with the following command:
+// Install-Package FluentValidation.DependencyInjectionExtensions
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
+
+// Add pipeline behavior for validation
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+// Add this before builder.Build()
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("DefaultCorsPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy
+            .AllowAnyOrigin()      // Or specify origins with .WithOrigins("https://example.com")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
-builder.Services.AddValidatorsFromAssemblyContaining<LoginCommand>();
+
 var app = builder.Build();
+
+// Place this before endpoint registration and after middleware
+app.UseCors("DefaultCorsPolicy");
 
 if (app.Environment.IsDevelopment())
 {

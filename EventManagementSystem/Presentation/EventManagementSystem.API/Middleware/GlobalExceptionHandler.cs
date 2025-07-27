@@ -20,17 +20,16 @@ namespace EventManagementSystem.API.Middleware
         {
             try
             {
-                await next(context);
+                await this.next(context);
             }
             catch (Exception ex)
             {
-                //using (LogContext.PushProperty("UserId", context.User?.Identity?.Name ?? "Anonymous"))
-                //using (LogContext.PushProperty("RequestPath", context.Request.Path))
-                //using (LogContext.PushProperty("RequestMethod", context.Request.Method))
-                //{
-                //    Log.Error(ex, "An unhandled exception occurred while processing request {RequestMethod} {RequestPath}",
-                //        context.Request.Method, context.Request.Path);
-                //}
+                this.logger.LogError(
+                    ex,
+                    "An unhandled exception occurred while processing request {RequestMethod} {RequestPath}",
+                    context.Request.Method,
+                    context.Request.Path
+                );
 
                 await HandleExceptionAsync(context, ex);
             }
@@ -38,64 +37,20 @@ namespace EventManagementSystem.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
-
-            var (statusCode, response) = exception switch
+            var response = exception switch
             {
-                ArgumentException argEx => (
-                    (int)HttpStatusCode.BadRequest,
-                    StandardResponseObject<object>.BadRequest(argEx.Message, "Validation failed")
-                ),
-
-                InvalidOperationException invOpEx => (
-                    (int)HttpStatusCode.Conflict,
-                    StandardResponseObject<object>.BadRequest(invOpEx.Message, "Operation conflict")
-                ),
-
-                UnauthorizedAccessException unauthEx => (
-                    (int)HttpStatusCode.Unauthorized,
-                    StandardResponseObject<object>.BadRequest(unauthEx.Message, "Unauthorized access")
-                ),
-
-                KeyNotFoundException keyNotFoundEx => (
-                    (int)HttpStatusCode.NotFound,
-                    StandardResponseObject<object>.NotFound(keyNotFoundEx.Message, "Resource not found")
-                ),
-
-                //DbUpdateException dbEx => (
-                //    (int)HttpStatusCode.InternalServerError,
-                //    StandardResponseObject<object>.InternalError("A database error occurred", "Database error")
-                //),
-
-                SqlException sqlEx => (
-                    (int)HttpStatusCode.InternalServerError,
-                    StandardResponseObject<object>.InternalError("A database connection error occurred", "Database connection error")
-                ),
-
-                TaskCanceledException tcEx when tcEx.InnerException is TimeoutException => (
-                    (int)HttpStatusCode.RequestTimeout,
-                    StandardResponseObject<object>.InternalError("Request timed out", "Request timeout")
-                ),
-
-                OperationCanceledException => (
-                    499, // Client Closed Request
-                    StandardResponseObject<object>.InternalError("Request was cancelled", "Request cancelled")
-                ),
-
-                _ => (
-                    (int)HttpStatusCode.InternalServerError,
-                    StandardResponseObject<object>.InternalError("An unexpected error occurred", "Internal server error")
-                )
+                ArgumentException argEx => StandardResponseObject<object>.BadRequest(argEx.Message, "Validation failed"),
+                InvalidOperationException invOpEx => StandardResponseObject<object>.BadRequest(invOpEx.Message, "Operation conflict"),
+                UnauthorizedAccessException unauthEx => StandardResponseObject<object>.BadRequest(unauthEx.Message, "Unauthorized access"),
+                KeyNotFoundException keyNotFoundEx => StandardResponseObject<object>.NotFound(keyNotFoundEx.Message, "Resource not found"),
+                SqlException sqlEx => StandardResponseObject<object>.InternalError("A database connection error occurred", "Database connection error"),
+                TaskCanceledException tcEx when tcEx.InnerException is TimeoutException => StandardResponseObject<object>.InternalError("Request timed out", "Request timeout"),
+                OperationCanceledException => StandardResponseObject<object>.InternalError("Request was cancelled", "Request cancelled"),
+                _ => StandardResponseObject<object>.InternalError("An unexpected error occurred", "Internal server error")
             };
 
-            context.Response.StatusCode = statusCode;
-
-            var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-
-            await context.Response.WriteAsync(jsonResponse);
+            var result = response.ToApiResult();
+            await result.ExecuteAsync(context);
         }
     }
 }

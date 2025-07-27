@@ -3,14 +3,18 @@
     using EventManagementSystem.Application.DTO;
     using FluentValidation;
     using MediatR;
+    using Microsoft.Extensions.Logging;
+
     public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
     {
         private readonly IEnumerable<IValidator<TRequest>> validators;
+        private readonly ILogger<ValidationBehavior<TRequest, TResponse>> logger;
 
-        public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+        public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators, ILogger<ValidationBehavior<TRequest, TResponse>> logger)
         {
             this.validators = validators;
+            this.logger = logger;
         }
 
         public async Task<TResponse> Handle(
@@ -23,7 +27,7 @@
                 var context = new ValidationContext<TRequest>(request);
 
                 var validationResults = await Task.WhenAll(
-                    validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+                    this.validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
                 var failures = validationResults
                     .SelectMany(r => r.Errors)
@@ -32,6 +36,8 @@
 
                 if (failures.Count != 0)
                 {
+                    this.logger.LogWarning("Validation failed for {RequestType}. Errors: {Errors}", typeof(TRequest).Name, string.Join("; ", failures.Select(f => f.ErrorMessage)));
+
                     // Option 1: Throw an exception
                     // throw new ValidationException(failures);
 

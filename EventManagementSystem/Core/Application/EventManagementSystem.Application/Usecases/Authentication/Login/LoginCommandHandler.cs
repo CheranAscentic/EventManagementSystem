@@ -7,43 +7,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace EventManagementSystem.Application.Usecases.Authentication.Login
 {
     public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<LoginDTO>>
     {
         private readonly IAppUserService appUserService;
-        private readonly ITokenService tokenService;
+        private readonly ILogger<LoginCommandHandler> logger;
 
-        public LoginCommandHandler(IAppUserService appUserService, ITokenService tokenService)
+        public LoginCommandHandler(IAppUserService appUserService, ILogger<LoginCommandHandler> logger)
         {
             this.appUserService = appUserService;
-            this.tokenService = tokenService;
+            this.logger = logger;
         }
 
         public async Task<StandardResponseObject<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
-            AppUser? userData = await this.appUserService.LoginAsync(command.Email, command.Password);
+            this.logger.LogInformation("Attempting login for Email: {Email}", command.Email);
 
+            var userData = await this.appUserService.LoginAsync(command.Email, command.Password);
             if (userData == null)
             {
-                return StandardResponseObject<LoginDTO>.BadRequest("Invalid credentials", "Login failed");
+                this.logger.LogWarning("Login failed for Email: {Email}", command.Email);
+                return StandardResponseObject<AppUser>.BadRequest("Invalid credentials", "Login failed");
             }
 
-            var userToken = this.tokenService.CreateToken(userData);
-            var tokenExpiration = this.tokenService.GetTokenExpiration();
-
-            LoginDTO loginDTO = new LoginDTO
-            {
-                Id = userData.Id,
-                Email = userData.Email!,
-                FirstName = userData.FirstName,
-                LastName = userData.LastName,
-                Token = userToken,
-                TokenExpiration = tokenExpiration,
-            };
-
-            return StandardResponseObject<LoginDTO>.Ok(loginDTO, "Login successful");
+            this.logger.LogInformation("Login successful for Email: {Email}", command.Email);
+            return StandardResponseObject<AppUser>.Ok(userData, "Login successful");
         }
     }
 }
