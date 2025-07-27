@@ -1,10 +1,13 @@
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
+using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
 using EventManagementSystem.Application.Usecases.Authentication.Login;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -63,6 +66,15 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Lo
 
 // Register AppUserService for IAppUserService
 builder.Services.AddScoped<IAppUserService, AppUserService>();
+
+// Ensure you have the FluentValidation.DependencyInjectionExtensions package installed
+// You can install it via NuGet Package Manager with the following command:
+// Install-Package FluentValidation.DependencyInjectionExtensions
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
+
+// Add pipeline behavior for validation
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 // Add this before builder.Build()
 builder.Services.AddCors(options =>

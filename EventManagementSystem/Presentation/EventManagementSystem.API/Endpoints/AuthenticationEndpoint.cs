@@ -49,8 +49,11 @@ namespace EventManagementSystem.API.Endpoints
                 [FromServices] IMediator mediator,
                 [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
-            logger.LogInformation("SignUp request received. Email: {Email}, FirstName: {FirstName}, LastName: {LastName}",
-                request.Data?.Email, request.Data?.FirstName, request.Data?.LastName);
+            logger.LogInformation(
+                "SignUp request received. Email: {Email}, FirstName: {FirstName}, LastName: {LastName}",
+                request.Data?.Email,
+                request.Data?.FirstName,
+                request.Data?.LastName);
 
             var response = await mediator.Send(request.Data);
 
