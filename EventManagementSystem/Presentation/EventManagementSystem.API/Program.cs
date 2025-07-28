@@ -7,6 +7,7 @@ using EventManagementSystem.Application.Usecases.Authentication.Login;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
+using EventManagementSystem.Persistence.Repositories;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +15,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
-//Load in the .env(environment variables). before the buidler
+// Load environment variables from .env file
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Set up Serilog logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
@@ -28,7 +29,7 @@ builder.Host.UseSerilog();
 
 builder.Services.AddOpenApi();
 
-// Add Swagger/OpenAPI support
+// Set up Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -40,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Add DbContext for Identity
+// Set up database context for Identity
 builder.Services.AddDbContext<IdentityDbContext>(options =>
 {
     options.UseSqlServer(
@@ -54,7 +55,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
     }
 });
 
-// Register IdentityDbContext and Identity
+// Set up Identity
 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -65,33 +66,30 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<IdentityDbContext>();
 
-// Add MediatR
+// Set up MediatR and validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
 });
-// Register AppUserService for IAppUserService
+
+// Register application services
 builder.Services.AddScoped<IAppUserService, AppUserService>();
-// TokenService
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// Ensure you have the FluentValidation.DependencyInjectionExtensions package installed
-// You can install it via NuGet Package Manager with the following command:
-// Install-Package FluentValidation.DependencyInjectionExtensions
-
+// Register FluentValidation validators
 builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
 
-// Add pipeline behavior for validation
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+// Register generic repository
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
-// Add this before builder.Build()
+// Set up CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultCorsPolicy", policy =>
     {
         policy
-            .AllowAnyOrigin()      // Or specify origins with .WithOrigins("https://example.com")
+            .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
@@ -99,7 +97,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Place this before endpoint registration and after middleware
+// Enable CORS
 app.UseCors("DefaultCorsPolicy");
 
 if (app.Environment.IsDevelopment())
@@ -108,18 +106,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "LMS API v1");
-        options.RoutePrefix = string.Empty; // Serves Swagger UI at the app's root
+        options.RoutePrefix = string.Empty; // Swagger UI at root
     });
     app.MapOpenApi();
 }
 
-// Add global exception handler BEFORE other middleware
+// Use global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();
 
+// Register all endpoint groups
 app.RegisterAllEndpointGroups();
 
-app.UseCors("AllowAll");
-
+// Enable HTTPS redirection
 app.UseHttpsRedirection();
 
 app.Run();
