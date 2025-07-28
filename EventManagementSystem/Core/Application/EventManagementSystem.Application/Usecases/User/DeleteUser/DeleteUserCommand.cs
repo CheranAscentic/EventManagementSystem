@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventManagementSystem.Application.Usecases.User.DeleteUser
+﻿namespace EventManagementSystem.Application.Usecases.User.DeleteUser
 {
-    internal class DeleteUserCommand
+    using EventManagementSystem.Application.DTO;
+    using EventManagementSystem.Domain.Models;
+    using MediatR;
+
+    public class DeleteUserCommand : IRequest<StandardResponseObject<AppUser>>
     {
+        public string UserId { get; }
+
+        public DeleteUserCommand(string userId)
+        {
+            UserId = userId;
+        }
     }
 }

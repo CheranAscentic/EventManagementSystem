@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EventManagementSystem.Application.DTO;
+using EventManagementSystem.Domain.Models;
+using MediatR;
 
 namespace EventManagementSystem.Application.Usecases.User.GetUser
 {
-    internal class GetUserQuery
+    public class GetUserQuery : IRequest<StandardResponseObject<AppUser>>
     {
+        public string UserId { get; } = string.Empty;
+
+        public GetUserQuery(string userId)
+        {
+            UserId = userId;
+        }
     }
 }

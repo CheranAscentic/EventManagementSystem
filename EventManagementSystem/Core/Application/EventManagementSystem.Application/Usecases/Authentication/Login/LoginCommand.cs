@@ -1,21 +1,18 @@
-using EventManagementSystem.Application.DTO;
-using EventManagementSystem.Domain.Models;
-using MediatR;
-
 namespace EventManagementSystem.Application.Usecases.Authentication.Login
 {
-    /// <summary>
-    /// Represents a query to log in a user.
-    /// </summary>
+    using EventManagementSystem.Application.DTO;
+    using MediatR;
+
     public class LoginCommand : IRequest<StandardResponseObject<LoginDTO>>
     {
-        public string Email { get; }
-        public string Password { get; }
+        public string Email { get; } = string.Empty;
+
+        public string Password { get; } = string.Empty;
 
         public LoginCommand(string email, string password)
         {
-            Email = email;
-            Password = password;
+            this.Email = email;
+            this.Password = password;
         }
     }
 }

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
 
 namespace EventManagementSystem.Application.Usecases.User.GetUser
 {
-    internal class GetUserQueryValidator
+    public class GetUserQueryValidator : AbstractValidator<GetUserQuery>
     {
+        public GetUserQueryValidator()
+        {
+            RuleFor(x => x.UserId)
+                .NotEmpty().WithMessage("UserId is required.");
+        }
     }
 }

@@ -4,16 +4,13 @@ namespace EventManagementSystem.Persistence.Repositories
     using EventManagementSystem.Application.Interfaces;
     using EventManagementSystem.Domain.Models;
     using EventManagementSystem.Persistence.Context;
+    using Microsoft.EntityFrameworkCore.Storage;
 
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext context;
 
-        public IRepository<Event> Events { get; }
-
-        public IRepository<EventRegistration> EventRegistrations { get; }
-
-        public IRepository<EventImage> EventImages { get; }
+        private IDbContextTransaction? currentTransaction;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -23,9 +20,43 @@ namespace EventManagementSystem.Persistence.Repositories
             this.EventImages = new GenericRepository<EventImage>(context);
         }
 
+        public IRepository<Event> Events { get; }
+
+        public IRepository<EventRegistration> EventRegistrations { get; }
+
+        public IRepository<EventImage> EventImages { get; }
+
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await this.context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task BeginTransactionAsync()
+        {
+            if (this.currentTransaction == null)
+            {
+                this.currentTransaction = await this.context.Database.BeginTransactionAsync();
+            }
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            if (this.currentTransaction != null)
+            {
+                await this.currentTransaction.CommitAsync();
+                await this.currentTransaction.DisposeAsync();
+                this.currentTransaction = null;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (this.currentTransaction != null)
+            {
+                await this.currentTransaction.RollbackAsync();
+                await this.currentTransaction.DisposeAsync();
+                this.currentTransaction = null;
+            }
         }
 
         /// <summary>
@@ -47,7 +78,7 @@ namespace EventManagementSystem.Persistence.Repositories
         /// </remarks>
         public void Dispose()
         {
-            context.Dispose();
+            this.context.Dispose();
         }
     }
 }
