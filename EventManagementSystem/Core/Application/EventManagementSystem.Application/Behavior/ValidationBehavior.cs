@@ -47,7 +47,7 @@
                     if (responseType.IsGenericType &&
                         responseType.GetGenericTypeDefinition() == typeof(StandardResponseObject<>))
                     {
-                        var errorMessages = string.Join("; ", failures.Select(f => f.ErrorMessage));
+                        var errorMessages = string.Join(" ", failures.Select(f => f.ErrorMessage));
                         var response = Activator.CreateInstance(responseType, false, errorMessages, 400, null, errorMessages);
                         return (TResponse)response!;
                     }

@@ -36,10 +36,12 @@ namespace EventManagementSystem.API.Endpoints
                 [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
             logger.LogInformation("Login request received. Email: {Email}", request.Data?.Email);
+            logger.LogDebug("Login request data: {RequestData}", request.Data);
 
             var response = await mediator.Send(request.Data);
 
             logger.LogInformation("Login response. Success: {Success}, Status: {Status}", response.Success, response.Status);
+            logger.LogDebug("Login response data: {ResponseData}", response.Data);
 
             return response.ToApiResult();
         }
@@ -54,10 +56,12 @@ namespace EventManagementSystem.API.Endpoints
                 request.Data?.Email,
                 request.Data?.FirstName,
                 request.Data?.LastName);
+            logger.LogDebug("SignUp request data: {RequestData}", request.Data);
 
             var response = await mediator.Send(request.Data);
 
             logger.LogInformation("SignUp response. Success: {Success}, Status: {Status}", response.Success, response.Status);
+            logger.LogDebug("SignUp response data: {ResponseData}", response.Data);
 
             return response.ToApiResult();
         }

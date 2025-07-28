@@ -1,40 +1,57 @@
-﻿using EventManagementSystem.Application.DTO;
-using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Domain.Models;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-
-namespace EventManagementSystem.Application.Usecases.Authentication.Login
+﻿namespace EventManagementSystem.Application.Usecases.Authentication.Login
 {
+    using EventManagementSystem.Application.DTO;
+    using EventManagementSystem.Application.Interfaces;
+    using EventManagementSystem.Domain.Models;
+    using MediatR;
+    using Microsoft.Extensions.Logging;
+
     public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<LoginDTO>>
     {
         private readonly IAppUserService appUserService;
         private readonly ILogger<LoginCommandHandler> logger;
+        private readonly ITokenService tokenService;
 
-        public LoginCommandHandler(IAppUserService appUserService, ILogger<LoginCommandHandler> logger)
+        public LoginCommandHandler(
+            IAppUserService appUserService,
+            ITokenService tokenService,
+            ILogger<LoginCommandHandler> logger)
         {
             this.appUserService = appUserService;
             this.logger = logger;
+            this.tokenService = tokenService;
         }
 
         public async Task<StandardResponseObject<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
             this.logger.LogInformation("Attempting login for Email: {Email}", command.Email);
 
-            var userData = await this.appUserService.LoginAsync(command.Email, command.Password);
-            if (userData == null)
+            var user = await this.appUserService.LoginAsync(command.Email, command.Password);
+            if (user == null)
             {
                 this.logger.LogWarning("Login failed for Email: {Email}", command.Email);
-                return StandardResponseObject<AppUser>.BadRequest("Invalid credentials", "Login failed");
+                return StandardResponseObject<LoginDTO>.BadRequest("Invalid credentials", "Login failed");
             }
 
+            // Generate token and expiration
+            var token = this.tokenService.CreateToken(user);
+            var tokenExpiration = this.tokenService.GetTokenExpiration();
+
+            // Create DTO
+            var response = new LoginDTO
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                UserName = user.UserName!,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                Token = token,
+                TokenExpiration = tokenExpiration,
+            };
+
             this.logger.LogInformation("Login successful for Email: {Email}", command.Email);
-            return StandardResponseObject<AppUser>.Ok(userData, "Login successful");
+            return StandardResponseObject<LoginDTO>.Ok(response, "Login successful");
         }
     }
 }

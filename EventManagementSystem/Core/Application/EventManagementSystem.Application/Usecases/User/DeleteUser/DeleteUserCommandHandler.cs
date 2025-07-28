@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EventManagementSystem.Application.Usecases.User.DeleteUser
 {
-    internal class DeleteUserCommandHandler
+    public class DeleteUserCommandHandler
     {
     }
 }
