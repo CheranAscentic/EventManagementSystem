@@ -6,7 +6,7 @@
     using MediatR;
     using Microsoft.Extensions.Logging;
 
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, StandardResponseObject<LoginDTO>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginDTO>>
     {
         private readonly IAppUserService appUserService;
         private readonly ILogger<LoginCommandHandler> logger;
@@ -22,7 +22,7 @@
             this.tokenService = tokenService;
         }
 
-        public async Task<StandardResponseObject<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
+        public async Task<Result<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
             this.logger.LogInformation("Attempting login for Email: {Email}", command.Email);
 
@@ -30,7 +30,7 @@
             if (user == null)
             {
                 this.logger.LogWarning("Login failed for Email: {Email}", command.Email);
-                return StandardResponseObject<LoginDTO>.BadRequest("Invalid credentials", "Login failed");
+                return Result<LoginDTO>.Failure("Login failed", null, 400, "Invalid credentials");
             }
 
             // Generate token and expiration
@@ -51,7 +51,7 @@
             };
 
             this.logger.LogInformation("Login successful for Email: {Email}", command.Email);
-            return StandardResponseObject<LoginDTO>.Ok(response, "Login successful");
+            return Result<LoginDTO>.Success("Login successful", response, 200);
         }
     }
 }

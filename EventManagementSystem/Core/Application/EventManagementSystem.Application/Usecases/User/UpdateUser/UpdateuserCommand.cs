@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventManagementSystem.Application.Usecases.User.UpdateUser
 {
-    public class UpdateUserCommand : IRequest<StandardResponseObject<AppUser>>
+    public class UpdateUserCommand : IRequest<Result<AppUser>>
     {
         public string UserId { get; } = string.Empty;
         public string UserName { get; } = string.Empty;

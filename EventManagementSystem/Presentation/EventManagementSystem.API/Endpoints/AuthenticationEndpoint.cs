@@ -25,45 +25,45 @@ namespace EventManagementSystem.API.Endpoints
             auth.MapPost("/signup", HandleSignUp)
                 .WithName("SignUp")
                 .WithSummary("Signs up a new user with email, password, first name, and last name.")
-                .Produces<StandardResponseObject<AppUser>>(StatusCodes.Status200OK)
+                .Produces<Result<AppUser>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest);
         }
 
 
         private async Task<IResult> HandleLogin(
-                StandardRequestObject<LoginCommand> request,
+                LoginCommand request,
                 [FromServices] IMediator mediator,
                 [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
-            logger.LogInformation("Login request received. Email: {Email}", request.Data?.Email);
-            logger.LogDebug("Login request data: {RequestData}", request.Data);
+            logger.LogInformation("Login request received. Email: {request}", request.Email);
+            logger.LogDebug("Login request data: {Request}", request);
 
-            var response = await mediator.Send(request.Data);
+            var result = await mediator.Send(request);
 
-            logger.LogInformation("Login response. Success: {Success}, Status: {Status}", response.Success, response.Status);
-            logger.LogDebug("Login response data: {ResponseData}", response.Data);
+            logger.LogInformation("Login result. Success: {Success}, Status: {Status}", result.IsSuccess, result.Status);
+            logger.LogDebug("Login result: {result}", result);
 
-            return response.ToApiResult();
+            return result.ToApiResult();
         }
 
         private async Task<IResult> HandleSignUp(
-                StandardRequestObject<SignUpCommand> request,
+                SignUpCommand request,
                 [FromServices] IMediator mediator,
                 [FromServices] ILogger<AuthenticationEndpoint> logger)
         {
             logger.LogInformation(
                 "SignUp request received. Email: {Email}, FirstName: {FirstName}, LastName: {LastName}",
-                request.Data?.Email,
-                request.Data?.FirstName,
-                request.Data?.LastName);
-            logger.LogDebug("SignUp request data: {RequestData}", request.Data);
+                request.Email,
+                request.FirstName,
+                request.LastName);
+            logger.LogDebug("SignUp request data: {Request}", request);
 
-            var response = await mediator.Send(request.Data);
+            var result = await mediator.Send(request);
 
-            logger.LogInformation("SignUp response. Success: {Success}, Status: {Status}", response.Success, response.Status);
-            logger.LogDebug("SignUp response data: {ResponseData}", response.Data);
+            logger.LogInformation("SignUp result. Success: {Success}, Status: {Status}", result.IsSuccess, result.Status);
+            logger.LogDebug("SignUp result: {result}", result.Value);
 
-            return response.ToApiResult();
+            return result.ToApiResult();
         }
     }
 }

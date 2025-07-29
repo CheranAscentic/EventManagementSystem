@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventManagementSystem.Application.Usecases.User.GetUser
 {
-    public class GetUserQuery : IRequest<StandardResponseObject<AppUser>>
+    public class GetUserQuery : IRequest<Result<AppUser>>
     {
         public string UserId { get; } = string.Empty;
 

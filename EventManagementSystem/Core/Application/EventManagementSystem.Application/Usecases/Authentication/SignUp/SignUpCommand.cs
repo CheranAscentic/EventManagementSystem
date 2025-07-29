@@ -4,7 +4,7 @@
     using EventManagementSystem.Domain.Models;
     using MediatR;
 
-    public class SignUpCommand : IRequest<StandardResponseObject<AppUser>>
+    public class SignUpCommand : IRequest<Result<AppUser>>
     {
         public string Email { get; } = string.Empty;
 
