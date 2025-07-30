@@ -11,7 +11,7 @@ namespace EventManagementSystem.Domain.Models
 
         public string Description { get; set; } = null!;
 
-        public DateTime Date { get; set; }
+        public DateTime EventDate { get; set; }
 
         public string Location { get; set; } = null!;
 
@@ -19,9 +19,9 @@ namespace EventManagementSystem.Domain.Models
 
         public int Capacity { get; set; }
 
-        public bool IsOpenForRegistration { get; set; }
+        public bool IsOpenForRegistration { get; set; } = true;
 
-        public DateTime RegistrationCutoff { get; set; }
+        public DateTime RegistrationCutoffDate { get; set; }
 
         public virtual ICollection<EventRegistration> Registrations { get; set; } = new List<EventRegistration>();
 

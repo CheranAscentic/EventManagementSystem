@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EventManagementSystem.Domain.Models;
 
 namespace EventManagementSystem.Application.Interfaces
 {
@@ -35,21 +34,6 @@ namespace EventManagementSystem.Application.Interfaces
     /// </remarks>
     public interface IUnitOfWork : IDisposable
     {
-        /// <summary>
-        /// Gets the repository for <see cref="Event"/> entities.
-        /// </summary>
-        IRepository<Event> Events { get; }
-
-        /// <summary>
-        /// Gets the repository for <see cref="EventRegistration"/> entities.
-        /// </summary>
-        IRepository<EventRegistration> EventRegistrations { get; }
-
-        /// <summary>
-        /// Gets the repository for <see cref="EventImage"/> entities.
-        /// </summary>
-        IRepository<EventImage> EventImages { get; }
-
         /// <summary>
         /// Saves all changes made in this unit of work to the database as a single transaction.
         /// </summary>

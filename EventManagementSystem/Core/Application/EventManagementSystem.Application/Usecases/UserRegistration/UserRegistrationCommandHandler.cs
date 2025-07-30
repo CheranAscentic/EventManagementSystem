@@ -7,22 +7,22 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
+namespace EventManagementSystem.Application.Usecases.UserRegistration
 {
-    public class SignUpCommandHandler : IRequestHandler<SignUpCommand, Result<AppUser>>
+    public class UserRegistrationCommandHandler : IRequestHandler<UserRegistrationCommand, Result<AppUser>>
     {
         private readonly IAppUserService appUserService;
-        private readonly ILogger<SignUpCommandHandler> logger;
+        private readonly ILogger<UserRegistrationCommandHandler> logger;
 
-        public SignUpCommandHandler(IAppUserService appUserService, ILogger<SignUpCommandHandler> logger)
+        public UserRegistrationCommandHandler(IAppUserService appUserService, ILogger<UserRegistrationCommandHandler> logger)
         {
             this.appUserService = appUserService;
             this.logger = logger;
         }
 
-        public async Task<Result<AppUser>> Handle(SignUpCommand command, CancellationToken cancellationToken = default)
+        public async Task<Result<AppUser>> Handle(UserRegistrationCommand command, CancellationToken cancellationToken = default)
         {
-            logger.LogInformation("SignUp attempt for Email: {Email}", command.Email);
+            this.logger.LogInformation("SignUp attempt for Email: {Email}", command.Email);
 
             // Check if email already exists
             if (await this.appUserService.CheckEmailExists(command.Email))
@@ -35,11 +35,11 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             string userId;
             try
             {
-                userId = await this.appUserService.SignUpAsync(command.UserName , command.Email, command.Password);
+                userId = await this.appUserService.RegisterAsync(command.UserName, command.Email, command.Password);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "SignUp failed for Email: {Email}", command.Email);
+                this.logger.LogError(ex, "SignUp failed for Email: {Email}", command.Email);
                 return Result<AppUser>.Failure("SignUp failed", null, 500, ex.Message);
             }
 
@@ -47,7 +47,7 @@ namespace EventManagementSystem.Application.Usecases.Authentication.SignUp
             var user = await this.appUserService.GetUserAsync(userId);
             if (user == null)
             {
-                logger.LogError("SignUp failed: User creation failed for Email: {Email}", command.Email);
+                this.logger.LogError("SignUp failed: User creation failed for Email: {Email}", command.Email);
                 return Result<AppUser>.Failure("SignUp failed", null, 500, "User creation failed.");
             }
 

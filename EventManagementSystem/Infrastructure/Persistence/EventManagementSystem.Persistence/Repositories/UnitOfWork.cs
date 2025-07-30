@@ -15,16 +15,7 @@ namespace EventManagementSystem.Persistence.Repositories
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
-            this.Events = new GenericRepository<Event>(context);
-            this.EventRegistrations = new GenericRepository<EventRegistration>(context);
-            this.EventImages = new GenericRepository<EventImage>(context);
         }
-
-        public IRepository<Event> Events { get; }
-
-        public IRepository<EventRegistration> EventRegistrations { get; }
-
-        public IRepository<EventImage> EventImages { get; }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

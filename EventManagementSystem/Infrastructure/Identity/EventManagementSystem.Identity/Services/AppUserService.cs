@@ -18,7 +18,7 @@
             this.logger = logger;
         }
 
-        public async Task<string> SignUpAsync(string userName, string email, string password)
+        public async Task<string> RegisterAsync(string userName, string email, string password, string role = "User")
         {
             logger.LogInformation("Creating user. Email: {Email}", email);
             var user = new AppUser
@@ -31,6 +31,7 @@
 
             if (result.Succeeded)
             {
+                await this.userManager.AddToRoleAsync(user, role);
                 return user.Id.ToString();
             }
 

@@ -3,7 +3,7 @@ using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
 using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Application.Usecases.Authentication.Login;
+using EventManagementSystem.Application.Usecases.UserLogin;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
@@ -66,22 +66,41 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<IdentityDbContext>();
 
+// Set up database context for ApplicationDbContext
+builder.Services.AddDbContext<EventManagementSystem.Persistence.Context.ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
 // Set up MediatR and validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(UserLoginCommand).Assembly);
 });
 
 // Register application services
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register FluentValidation validators
-builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UserLoginCommandValidator>();
 
 // Register generic repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+// Register repositories for Event, EventRegistration, EventImage
+builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.Event>, GenericRepository<EventManagementSystem.Domain.Models.Event>>();
+builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.EventRegistration>, GenericRepository<EventManagementSystem.Domain.Models.EventRegistration>>();
+builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.EventImage>, GenericRepository<EventManagementSystem.Domain.Models.EventImage>>();
 
 // Set up CORS
 builder.Services.AddCors(options =>

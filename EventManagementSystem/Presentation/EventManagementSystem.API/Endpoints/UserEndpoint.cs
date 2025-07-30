@@ -1,14 +1,14 @@
 ﻿using EventManagementSystem.API.Interface;
 using EventManagementSystem.Application.DTO;
-using EventManagementSystem.Application.Usecases.Authentication.Login;
-using EventManagementSystem.Application.Usecases.Authentication.SignUp;
+using EventManagementSystem.Application.Usecases.UserLogin;
+using EventManagementSystem.Application.Usecases.UserRegistration;
 using EventManagementSystem.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagementSystem.API.Endpoints
 {
-    public class AuthenticationEndpoint : IEndpointGroup
+    public class UserEndpoint : IEndpointGroup
     {
         public void MapEndpoints(IEndpointRouteBuilder app)
         {
@@ -16,24 +16,23 @@ namespace EventManagementSystem.API.Endpoints
                 .WithTags("Authentication")
                 .WithOpenApi();
 
-            auth.MapPost("/login", HandleLogin)
+            auth.MapPost("/login", HandleUserLogin)
                 .WithName("Login")
-                .WithSummary("Logs in a user with email and password.")
+                .WithSummary("Logs in a User with email and password.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest);
 
-            auth.MapPost("/signup", HandleSignUp)
-                .WithName("SignUp")
-                .WithSummary("Signs up a new user with email, password, first name, and last name.")
+            auth.MapPost("/Register", HandleUserRegister)
+                .WithName("Register")
+                .WithSummary("Register a new User with email, password, first name, and last name.")
                 .Produces<Result<AppUser>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest);
         }
 
-
-        private async Task<IResult> HandleLogin(
-                LoginCommand request,
+        private async Task<IResult> HandleUserLogin(
+                UserLoginCommand request,
                 [FromServices] IMediator mediator,
-                [FromServices] ILogger<AuthenticationEndpoint> logger)
+                [FromServices] ILogger<UserEndpoint> logger)
         {
             logger.LogInformation("Login request received. Email: {request}", request.Email);
             logger.LogDebug("Login request data: {Request}", request);
@@ -46,10 +45,10 @@ namespace EventManagementSystem.API.Endpoints
             return result.ToApiResult();
         }
 
-        private async Task<IResult> HandleSignUp(
-                SignUpCommand request,
+        private async Task<IResult> HandleUserRegister(
+                UserRegistrationCommand request,
                 [FromServices] IMediator mediator,
-                [FromServices] ILogger<AuthenticationEndpoint> logger)
+                [FromServices] ILogger<UserEndpoint> logger)
         {
             logger.LogInformation(
                 "SignUp request received. Email: {Email}, FirstName: {FirstName}, LastName: {LastName}",
