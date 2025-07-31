@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.EventCreation
+namespace EventManagementSystem.Application.Usecases.UpdateEvent
 {
     using FluentValidation;
     public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>

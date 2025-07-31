@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.EventCreation
+namespace EventManagementSystem.Application.Usecases.DeleteEvent
 {
     using MediatR;
     using EventManagementSystem.Application.DTO;
@@ -8,7 +8,7 @@ namespace EventManagementSystem.Application.Usecases.EventCreation
     {
         public DeleteEventCommand(Guid id)
         {
-            this.Id = id;
+            Id = id;
         }
 
         public Guid Id { get; }

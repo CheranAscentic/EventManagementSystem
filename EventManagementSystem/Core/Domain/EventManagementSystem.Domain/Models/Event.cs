@@ -26,5 +26,8 @@ namespace EventManagementSystem.Domain.Models
         public virtual ICollection<EventRegistration> Registrations { get; set; } = new List<EventRegistration>();
 
         public virtual EventImage? Image { get; set; }
+
+        public int NoOfRegistrations { get => this.Registrations?.Count ?? 0; }
+
     }
 }

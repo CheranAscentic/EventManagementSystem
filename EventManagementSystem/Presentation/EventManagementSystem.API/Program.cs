@@ -7,6 +7,7 @@ using EventManagementSystem.Application.Usecases.UserLogin;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
+using EventManagementSystem.Persistence.Context;
 using EventManagementSystem.Persistence.Repositories;
 using FluentValidation;
 using MediatR;
@@ -67,7 +68,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<IdentityDbContext>();
 
 // Set up database context for ApplicationDbContext
-builder.Services.AddDbContext<EventManagementSystem.Persistence.Context.ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -97,10 +98,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserLoginCommandValidator>(
 
 // Register generic repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+
 // Register repositories for Event, EventRegistration, EventImage
-builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.Event>, GenericRepository<EventManagementSystem.Domain.Models.Event>>();
-builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.EventRegistration>, GenericRepository<EventManagementSystem.Domain.Models.EventRegistration>>();
-builder.Services.AddScoped<IRepository<EventManagementSystem.Domain.Models.EventImage>, GenericRepository<EventManagementSystem.Domain.Models.EventImage>>();
+builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
+builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
+builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
 
 // Set up CORS
 builder.Services.AddCors(options =>

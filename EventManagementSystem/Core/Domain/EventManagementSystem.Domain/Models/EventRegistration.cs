@@ -1,5 +1,3 @@
-using System;
-
 namespace EventManagementSystem.Domain.Models
 {
     public class EventRegistration

@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.EventCreation
+namespace EventManagementSystem.Application.Usecases.CreateEvent
 {
     using System;
     using EventManagementSystem.Application.DTO;
@@ -9,13 +9,13 @@ namespace EventManagementSystem.Application.Usecases.EventCreation
     {
         public CreateEventCommand(string title, string description, DateTime eventDate, string location, string type, int capacity, DateTime registrationCutoffDate)
         {
-            this.Title = title;
-            this.Description = description;
-            this.EventDate = eventDate;
-            this.Location = location;
-            this.Type = type;
-            this.Capacity = capacity;
-            this.RegistrationCutoffDate = registrationCutoffDate;
+            Title = title;
+            Description = description;
+            EventDate = eventDate;
+            Location = location;
+            Type = type;
+            Capacity = capacity;
+            RegistrationCutoffDate = registrationCutoffDate;
         }
 
         public string Title { get; }

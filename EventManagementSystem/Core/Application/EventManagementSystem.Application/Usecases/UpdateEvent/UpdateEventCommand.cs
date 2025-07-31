@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.EventCreation
+namespace EventManagementSystem.Application.Usecases.UpdateEvent
 {
     using EventManagementSystem.Application.DTO;
     using EventManagementSystem.Domain.Models;
@@ -16,14 +16,14 @@ namespace EventManagementSystem.Application.Usecases.EventCreation
             int? capacity = null,
             DateTime? registrationCutoffDate = null)
         {
-            this.Id = id;
-            this.Title = title;
-            this.Description = description;
-            this.EventDate = eventDate;
-            this.Location = location;
-            this.Type = type;
-            this.Capacity = capacity;
-            this.RegistrationCutoffDate = registrationCutoffDate;
+            Id = id;
+            Title = title;
+            Description = description;
+            EventDate = eventDate;
+            Location = location;
+            Type = type;
+            Capacity = capacity;
+            RegistrationCutoffDate = registrationCutoffDate;
         }
 
         public Guid Id { get; }

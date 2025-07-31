@@ -13,7 +13,7 @@ namespace EventManagementSystem.API.Endpoints
         public void MapEndpoints(IEndpointRouteBuilder app)
         {
             var auth = app.MapGroup("/api/authentication")
-                .WithTags("Authentication")
+                .WithTags("User Endpoints")
                 .WithOpenApi();
 
             auth.MapPost("/login", HandleUserLogin)
