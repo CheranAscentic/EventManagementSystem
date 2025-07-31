@@ -23,8 +23,16 @@ namespace EventManagementSystem.Domain.Models
 
         public DateTime RegistrationCutoffDate { get; set; }
 
+        /// <summary>
+        /// Navigation property for the registrations associated with this event.
+        /// Must be loaded using GetWithIncludesAsync with "Registrations" (and "Registrations.User" for user details).
+        /// </summary>
         public virtual ICollection<EventRegistration> Registrations { get; set; } = new List<EventRegistration>();
 
+        /// <summary>
+        /// Navigation property for the image associated with this event.
+        /// Must be loaded using GetWithIncludesAsync with "Image".
+        /// </summary>
         public virtual EventImage? Image { get; set; }
 
         public int NoOfRegistrations { get => this.Registrations?.Count ?? 0; }
