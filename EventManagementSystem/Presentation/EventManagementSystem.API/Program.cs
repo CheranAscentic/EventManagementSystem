@@ -1,19 +1,36 @@
+using DotNetEnv;
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
+using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Application.Usecases.Authentication.Login;
+using EventManagementSystem.Application.Usecases.UserLogin;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
+using EventManagementSystem.Persistence.Context;
+using EventManagementSystem.Persistence.Repositories;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
+
+// Load environment variables from .env file
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Set up Serilog logging
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 builder.Services.AddOpenApi();
 
-// Add Swagger/OpenAPI support
+// Set up Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -25,7 +42,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Add DbContext for Identity
+// Set up database context for Identity
 builder.Services.AddDbContext<IdentityDbContext>(options =>
 {
     options.UseSqlServer(
@@ -39,7 +56,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
     }
 });
 
-// Register IdentityDbContext and Identity
+// Set up Identity
 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -50,13 +67,59 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<IdentityDbContext>();
 
-// Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginCommandHandler>());
+// Set up database context for ApplicationDbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
-// Register AppUserService for IAppUserService
+// Set up MediatR and validation pipeline
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(UserLoginCommand).Assembly);
+});
+
+// Register application services
 builder.Services.AddScoped<IAppUserService, AppUserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register FluentValidation validators
+builder.Services.AddValidatorsFromAssemblyContaining<UserLoginCommandValidator>();
+
+// Register generic repository
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+
+// Register repositories for Event, EventRegistration, EventImage
+builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
+builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
+builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
+
+// Set up CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
+
+// Enable CORS
+app.UseCors("DefaultCorsPolicy");
 
 if (app.Environment.IsDevelopment())
 {
@@ -64,16 +127,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "LMS API v1");
-        options.RoutePrefix = string.Empty; // Serves Swagger UI at the app's root
+        options.RoutePrefix = string.Empty; // Swagger UI at root
     });
     app.MapOpenApi();
 }
 
-// Add global exception handler BEFORE other middleware
+// Use global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();
 
+// Register all endpoint groups
 app.RegisterAllEndpointGroups();
 
+// Enable HTTPS redirection
 app.UseHttpsRedirection();
 
 app.Run();

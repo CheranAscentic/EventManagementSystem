@@ -46,8 +46,8 @@ namespace EventManagementSystem.Identity.Context
                 new IdentityRole<Guid>
                 {
                     Id = Guid.Parse("c1122f1a-3748-466b-af45-ac3992d2e121"),
-                    Name = "Attendee",
-                    NormalizedName = "ATTENDEE",
+                    Name = "User",
+                    NormalizedName = "USER",
                 },
             };
 
