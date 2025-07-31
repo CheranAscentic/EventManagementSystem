@@ -9,7 +9,7 @@ namespace EventManagementSystem.Application.Interfaces
 {
     public interface IAppUserService
     {
-        Task<string> SignUpAsync(string userName, string email, string password);
+        Task<string> RegisterAsync(string userName, string email, string password, string role = "User");
 
         Task<AppUser> LoginAsync(string email, string password);
 
