@@ -18,8 +18,16 @@ namespace EventManagementSystem.Domain.Models
 
         public bool IsCanceled { get; set; }
 
+        /// <summary>
+        /// Navigation property for the event associated with this registration.
+        /// Must be loaded using GetWithIncludesAsync with "Event".
+        /// </summary>
         public virtual Event Event { get; set; } = null!;
 
+        /// <summary>
+        /// Navigation property for the user associated with this registration.
+        /// Must be loaded using GetWithIncludesAsync with "User".
+        /// </summary>
         public virtual AppUser User { get; set; } = null!;
     }
 }
