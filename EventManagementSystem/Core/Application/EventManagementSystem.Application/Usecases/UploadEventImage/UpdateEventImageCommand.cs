@@ -5,7 +5,7 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
     using EventManagementSystem.Domain.Models;
     using MediatR;
 
-    public class UploadImageCommand : IRequest<Result<EventImage>>
+    public class UpdateEventImageCommand : IRequest<Result<EventImage>>
     {
         public Guid EventId { get; set; }
 

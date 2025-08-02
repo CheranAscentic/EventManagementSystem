@@ -30,6 +30,8 @@ namespace EventManagementSystem.Application.Usecases.GetEvent
                 return Result<Event>.Failure("Event not found.", null, 404, "Not Found");
             }
 
+            eventEntity = await this.repository.GetWithIncludesAsync(request.EventId, "Image");
+
             this.logger.LogInformation("Event found: {EventId}", eventEntity.Id);
             return Result<Event>.Success("Event fetched successfully.", eventEntity, 200);
         }

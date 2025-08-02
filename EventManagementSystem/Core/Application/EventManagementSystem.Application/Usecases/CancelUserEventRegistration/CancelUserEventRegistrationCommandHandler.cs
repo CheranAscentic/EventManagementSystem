@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.CancelEventRegistration
+namespace EventManagementSystem.Application.Usecases.CancelUserEventRegistration
 {
     using System;
     using System.Threading;
@@ -9,20 +9,20 @@ namespace EventManagementSystem.Application.Usecases.CancelEventRegistration
     using EventManagementSystem.Domain.Models;
     using EventManagementSystem.Application.Interfaces;
 
-    public class CancelEventRegistrationCommandHandler : IRequestHandler<CancelEventRegistrationCommand, Result<EventRegistration>>
+    public class CancelUserEventRegistrationCommandHandler : IRequestHandler<CancelUserEventRegistrationCommand, Result<EventRegistration>>
     {
         private readonly IRepository<Event> eventRepository;
         private readonly IRepository<EventRegistration> eventRegistrationRepository;
         private readonly IAppUserService appUserService;
-        private readonly ILogger<CancelEventRegistrationCommandHandler> logger;
+        private readonly ILogger<CancelUserEventRegistrationCommandHandler> logger;
         private readonly IUnitOfWork unitOfWork;
 
-        public CancelEventRegistrationCommandHandler(
+        public CancelUserEventRegistrationCommandHandler(
             IRepository<Event> eventRepository,
             IRepository<EventRegistration> eventRegistrationRepository,
             IAppUserService appUserService,
             IUnitOfWork unitOfWork,
-            ILogger<CancelEventRegistrationCommandHandler> logger)
+            ILogger<CancelUserEventRegistrationCommandHandler> logger)
         {
             this.eventRepository = eventRepository;
             this.eventRegistrationRepository = eventRegistrationRepository;
@@ -31,45 +31,45 @@ namespace EventManagementSystem.Application.Usecases.CancelEventRegistration
             this.logger = logger;
         }
 
-        public async Task<Result<EventRegistration>> Handle(CancelEventRegistrationCommand command, CancellationToken cancellationToken)
+        public async Task<Result<EventRegistration>> Handle(CancelUserEventRegistrationCommand command, CancellationToken cancellationToken)
         {
-            this.logger.LogInformation("Canceling event registration {EventRegistrationId} for user {AppUserId}", command.EventRegistrationId, command.AppUserId);
+            logger.LogInformation("Canceling event registration {EventRegistrationId} for user {AppUserId}", command.EventRegistrationId, command.AppUserId);
 
             // 1. Get AppUser
-            var user = await this.appUserService.GetUserAsync(command.AppUserId.ToString());
+            var user = await appUserService.GetUserAsync(command.AppUserId.ToString());
             if (user == null)
             {
-                this.logger.LogWarning("User not found: {AppUserId}", command.AppUserId);
+                logger.LogWarning("User not found: {AppUserId}", command.AppUserId);
                 return Result<EventRegistration>.Failure("User not found.", null, 404, "Not Found");
             }
 
             // 2. Get EventRegistration
-            var registration = await this.eventRegistrationRepository.GetAsync(command.EventRegistrationId);
+            var registration = await eventRegistrationRepository.GetAsync(command.EventRegistrationId);
             if (registration == null)
             {
-                this.logger.LogWarning("Event registration not found: {EventRegistrationId}", command.EventRegistrationId);
+                logger.LogWarning("Event registration not found: {EventRegistrationId}", command.EventRegistrationId);
                 return Result<EventRegistration>.Failure("Event registration not found.", null, 404, "Not Found");
             }
 
             // 3. Get Event
-            var eventEntity = await this.eventRepository.GetAsync(registration.EventId);
+            var eventEntity = await eventRepository.GetAsync(registration.EventId);
             if (eventEntity == null)
             {
-                this.logger.LogWarning("Event not found for registration: {EventId}", registration.EventId);
+                logger.LogWarning("Event not found for registration: {EventId}", registration.EventId);
                 return Result<EventRegistration>.Failure("Event not found for registration.", null, 404, "Not Found");
             }
 
             // 4. Remove EventRegistration
-            var removed = await this.eventRegistrationRepository.RemoveAsync(command.EventRegistrationId);
+            var removed = await eventRegistrationRepository.RemoveAsync(command.EventRegistrationId);
             if (!removed)
             {
-                this.logger.LogWarning("Failed to remove event registration: {EventRegistrationId}", command.EventRegistrationId);
+                logger.LogWarning("Failed to remove event registration: {EventRegistrationId}", command.EventRegistrationId);
                 return Result<EventRegistration>.Failure("Failed to remove event registration.", null, 500, "Remove Failed");
             }
 
             // 5. Save changes
-            await this.unitOfWork.SaveChangesAsync(cancellationToken);
-            this.logger.LogInformation("Event registration {EventRegistrationId} canceled successfully for user {AppUserId}", command.EventRegistrationId, command.AppUserId);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            logger.LogInformation("Event registration {EventRegistrationId} canceled successfully for user {AppUserId}", command.EventRegistrationId, command.AppUserId);
             return Result<EventRegistration>.Success("Event registration canceled successfully.", registration, 200);
         }
     }

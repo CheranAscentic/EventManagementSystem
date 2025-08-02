@@ -20,7 +20,7 @@
 
         public async Task<string> RegisterAsync(string userName, string email, string password, string role = "User")
         {
-            logger.LogInformation("Creating user. Email: {Email}", email);
+            this.logger.LogInformation("Creating user. Email: {Email}", email);
             var user = new AppUser
             {
                 UserName = userName,
@@ -35,7 +35,9 @@
                 return user.Id.ToString();
             }
 
-            throw new System.Exception(string.Join("; ", result.Errors));
+            var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
+            logger.LogError("User registration failed for Email: {Email}. Errors: {Errors}", email, errorMessages);
+            throw new System.Exception(errorMessages);
         }
 
         public async Task<AppUser?> LoginAsync(string email, string password)

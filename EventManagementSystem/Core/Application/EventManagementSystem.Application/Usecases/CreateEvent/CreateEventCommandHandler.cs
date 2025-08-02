@@ -53,7 +53,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             await this.unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Create default EventImage
-            var defaultImageUrl = this.configuration["Default__EventImageURL"] ?? string.Empty;
+            var defaultImageUrl = this.configuration["Default:EventImageURL"] ?? string.Empty;
             var eventImage = new EventImage
             {
                 Id = Guid.NewGuid(),

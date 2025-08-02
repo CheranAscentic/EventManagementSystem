@@ -11,7 +11,8 @@ namespace EventManagementSystem.Application.Usecases.AdminRegistration
                 .EmailAddress().WithMessage("Email format is invalid.");
 
             this.RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required.");
+                .NotEmpty().WithMessage("Password is required.")
+                .MinimumLength(12).WithMessage("Passwords must be at least 12 characters.");
 
             this.RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required.");

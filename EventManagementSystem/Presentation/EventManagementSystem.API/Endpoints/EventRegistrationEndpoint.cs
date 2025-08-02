@@ -2,8 +2,6 @@ namespace EventManagementSystem.API.Endpoints
 {
     using System.Collections.Generic;
     using EventManagementSystem.API.Interface;
-    using EventManagementSystem.Application.Usecases.CreateEventRegistration;
-    using EventManagementSystem.Application.Usecases.CancelEventRegistration;
     using EventManagementSystem.Application.Usecases.ViewUserEventRegistrations;
     using EventManagementSystem.Application.Usecases.ViewEventEventRegistrations;
     using EventManagementSystem.Application.Usecases.UploadEventImage;
@@ -12,6 +10,8 @@ namespace EventManagementSystem.API.Endpoints
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using EventManagementSystem.Application.DTO;
+    using EventManagementSystem.Application.Usecases.MakeUserEventRegistration;
+    using EventManagementSystem.Application.Usecases.CancelUserEventRegistration;
 
     public class EventRegistrationEndpoint : IEndpointGroup
     {
@@ -53,7 +53,7 @@ namespace EventManagementSystem.API.Endpoints
         }
 
         private async Task<IResult> HandleCreateEventRegistration(
-            [FromBody] CreateEventRegistrationCommand request,
+            [FromBody] MakeUserEventRegistrationCommand request,
             [FromServices] IMediator mediator,
             [FromServices] ILogger<EventRegistrationEndpoint> logger)
         {
@@ -65,12 +65,12 @@ namespace EventManagementSystem.API.Endpoints
 
         private async Task<IResult> HandleCancelEventRegistration(
             Guid id,
-            [FromBody] CancelEventRegistrationCommand request,
+            [FromBody] CancelUserEventRegistrationCommand request,
             [FromServices] IMediator mediator,
             [FromServices] ILogger<EventRegistrationEndpoint> logger)
         {
             logger.LogInformation("CancelEventRegistration request received. EventRegistrationId: {Id}, AppUserId: {AppUserId}", id, request.AppUserId);
-            var cancelRequest = new CancelEventRegistrationCommand
+            var cancelRequest = new CancelUserEventRegistrationCommand
             {
                 EventRegistrationId = id,
                 AppUserId = request.AppUserId,
@@ -103,7 +103,7 @@ namespace EventManagementSystem.API.Endpoints
         }
 
         private async Task<IResult> HandleUploadEventImage(
-            [FromBody] UploadImageCommand request,
+            [FromBody] UpdateEventImageCommand request,
             [FromServices] IMediator mediator,
             [FromServices] ILogger<EventRegistrationEndpoint> logger)
         {

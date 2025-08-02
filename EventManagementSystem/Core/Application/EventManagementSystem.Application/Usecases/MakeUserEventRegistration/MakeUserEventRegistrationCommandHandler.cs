@@ -1,4 +1,4 @@
-namespace EventManagementSystem.Application.Usecases.CreateEventRegistration
+namespace EventManagementSystem.Application.Usecases.MakeUserEventRegistration
 {
     using System;
     using System.Linq;
@@ -10,18 +10,18 @@ namespace EventManagementSystem.Application.Usecases.CreateEventRegistration
     using EventManagementSystem.Domain.Models;
     using EventManagementSystem.Application.Interfaces;
 
-    public class CreateEventRegistrationCommandHandler : IRequestHandler<CreateEventRegistrationCommand, Result<EventRegistration>>
+    public class MakeUserEventRegistrationCommandHandler : IRequestHandler<MakeUserEventRegistrationCommand, Result<EventRegistration>>
     {
         private readonly IRepository<Event> eventRepository;
         private readonly IRepository<EventRegistration> eventRegistrationRepository;
         private readonly IAppUserService appUserService;
-        private readonly ILogger<CreateEventRegistrationCommandHandler> logger;
+        private readonly ILogger<MakeUserEventRegistrationCommandHandler> logger;
 
-        public CreateEventRegistrationCommandHandler(
+        public MakeUserEventRegistrationCommandHandler(
             IRepository<Event> eventRepository,
             IRepository<EventRegistration> eventRegistrationRepository,
             IAppUserService appUserService,
-            ILogger<CreateEventRegistrationCommandHandler> logger)
+            ILogger<MakeUserEventRegistrationCommandHandler> logger)
         {
             this.eventRepository = eventRepository;
             this.eventRegistrationRepository = eventRegistrationRepository;
@@ -29,7 +29,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEventRegistration
             this.logger = logger;
         }
 
-        public async Task<Result<EventRegistration>> Handle(CreateEventRegistrationCommand command, CancellationToken cancellationToken)
+        public async Task<Result<EventRegistration>> Handle(MakeUserEventRegistrationCommand command, CancellationToken cancellationToken)
         {
             logger.LogInformation("Registering user {UserId} for event {EventId}", command.AppUserId, command.EventId);
 

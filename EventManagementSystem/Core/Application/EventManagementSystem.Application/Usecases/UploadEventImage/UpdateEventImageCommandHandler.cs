@@ -9,18 +9,18 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
     using MediatR;
     using Microsoft.Extensions.Logging;
 
-    public class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, Result<EventImage>>
+    public class UpdateEventImageCommandHandler : IRequestHandler<UpdateEventImageCommand, Result<EventImage>>
     {
         private readonly IRepository<Event> eventRepository;
         private readonly IRepository<EventImage> eventImageRepository;
         private readonly IUnitOfWork unitOfWork;
-        private readonly ILogger<UploadImageCommandHandler> logger;
+        private readonly ILogger<UpdateEventImageCommandHandler> logger;
 
-        public UploadImageCommandHandler(
+        public UpdateEventImageCommandHandler(
             IRepository<Event> eventRepository,
             IRepository<EventImage> eventImageRepository,
             IUnitOfWork unitOfWork,
-            ILogger<UploadImageCommandHandler> logger)
+            ILogger<UpdateEventImageCommandHandler> logger)
         {
             this.eventRepository = eventRepository;
             this.eventImageRepository = eventImageRepository;
@@ -28,7 +28,7 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
             this.logger = logger;
         }
 
-        public async Task<Result<EventImage>> Handle(UploadImageCommand command, CancellationToken cancellationToken)
+        public async Task<Result<EventImage>> Handle(UpdateEventImageCommand command, CancellationToken cancellationToken)
         {
             this.logger.LogInformation("Uploading image for event {EventId}", command.EventId);
 

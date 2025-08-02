@@ -21,6 +21,9 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add environment variables into the Configuratio
+builder.Configuration.AddEnvironmentVariables();
+
 // Set up Serilog logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -120,6 +123,11 @@ var app = builder.Build();
 
 // Enable CORS
 app.UseCors("DefaultCorsPolicy");
+
+foreach (var kvp in app.Configuration.AsEnumerable())
+{
+    Console.WriteLine($"{kvp.Key} = {kvp.Value}");
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -2,9 +2,9 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
 {
     using FluentValidation;
 
-    public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
+    public class UpdateEventImageCommandValidator : AbstractValidator<UpdateEventImageCommand>
     {
-        public UploadImageCommandValidator()
+        public UpdateEventImageCommandValidator()
         {
             this.RuleFor(x => x.EventId)
                 .NotEmpty().WithMessage("EventId is required.");

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace EventManagementSystem.Domain.Models
 {
     public class EventImage
@@ -12,6 +14,7 @@ namespace EventManagementSystem.Domain.Models
         /// Navigation property for the event associated with this image.
         /// Must be loaded using GetWithIncludesAsync with "Event".
         /// </summary>
+        [JsonIgnore]
         public virtual Event Event { get; set; } = null!;
     }
 }
