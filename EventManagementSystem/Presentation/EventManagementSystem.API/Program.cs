@@ -21,7 +21,7 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add environment variables into the Configuratio
+// Add environment variables into the Configuration
 builder.Configuration.AddEnvironmentVariables();
 
 // Set up Serilog logging
