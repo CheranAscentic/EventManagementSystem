@@ -8,6 +8,8 @@ namespace EventManagementSystem.Domain.Models
     {
         public Guid Id { get; set; }
 
+        public Guid AdminId { get; set; }
+
         public string Title { get; set; } = null!;
 
         public string Description { get; set; } = null!;
@@ -43,6 +45,7 @@ namespace EventManagementSystem.Domain.Models
             return new EventDTO
             {
                 Id = this.Id,
+
                 Title = this.Title,
                 Description = this.Description,
                 EventDate = this.EventDate,
@@ -59,6 +62,8 @@ namespace EventManagementSystem.Domain.Models
         public class EventDTO : IsDto
         {
             public Guid Id { get; set; }
+
+            public Guid AdminId { get; set; }
 
             public string Title { get; set; } = string.Empty;
 
