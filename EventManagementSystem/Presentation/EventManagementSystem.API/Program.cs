@@ -27,7 +27,9 @@ builder.Configuration.AddEnvironmentVariables();
 
 // Set up Serilog logging
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Debug() // Set global minimum level
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.Console()
     .CreateLogger();
 
 builder.Host.UseSerilog();

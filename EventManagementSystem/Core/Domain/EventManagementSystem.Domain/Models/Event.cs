@@ -52,11 +52,11 @@ namespace EventManagementSystem.Domain.Models
                 IsOpenForRegistration = this.IsOpenForRegistration,
                 RegistrationCutoffDate = this.RegistrationCutoffDate,
                 NoOfRegistrations = this.NoOfRegistrations,
-                Image = this.Image?.ToDto() as EventImage.EventImageDTO,
+                ImageUrl = this.Image?.ImageUrl ?? string.Empty,
             };
         }
 
-        public class EventDTO
+        public class EventDTO : IsDto
         {
             public Guid Id { get; set; }
 
@@ -78,7 +78,7 @@ namespace EventManagementSystem.Domain.Models
 
             public int NoOfRegistrations { get; set; }
 
-            public EventImage.EventImageDTO? Image { get; set; }
+            public string? ImageUrl { get; set; }
 
         }
     }

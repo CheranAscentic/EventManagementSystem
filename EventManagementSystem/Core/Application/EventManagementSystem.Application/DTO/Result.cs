@@ -2,6 +2,9 @@
 {
     using EventManagementSystem.Domain.Interfaces;
     using Microsoft.AspNetCore.Http;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class Result<T>
         where T : class
@@ -66,8 +69,44 @@
                 return Results.Json(transformedResult, statusCode: this.Status);
             }
 
+            // Handle collections: convert each item to DTO if applicable
+            if (this.Value is IEnumerable enumerable && !(this.Value is string))
+            {
+                var convertedCollection = ConvertCollectionToDtos(enumerable);
+                var transformedResult = new Result<object>
+                {
+                    IsSuccess = this.IsSuccess,
+                    Message = this.Message,
+                    Status = this.Status,
+                    Error = this.Error,
+                    Value = convertedCollection,
+                };
+                return Results.Json(transformedResult, statusCode: this.Status);
+            }
+
             // Default case - return as is
             return Results.Json(this, statusCode: this.Status);
+        }
+
+        private static List<object> ConvertCollectionToDtos(IEnumerable collection)
+        {
+            var resultList = new List<object>();
+            foreach (var item in collection)
+            {
+                if (item is HasDto hasDto)
+                {
+                    resultList.Add(hasDto.ToDto());
+                }
+                else if (item is IsDto)
+                {
+                    resultList.Add(item);
+                }
+                else
+                {
+                    resultList.Add(item);
+                }
+            }
+            return resultList;
         }
     }
 }
