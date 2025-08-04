@@ -115,5 +115,26 @@
 
             return user == null ? false : true;
         }
+
+        /// <summary>
+        /// Gets the primary role of a user.
+        /// </summary>
+        /// <param name="user">The user to get the role for</param>
+        /// <returns>The user's primary role or empty string if no roles found</returns>
+        public async Task<string> GetUserRoleAsync(AppUser user)
+        {
+            var roles = await this.userManager.GetRolesAsync(user);
+            return roles.FirstOrDefault() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Gets all roles of a user.
+        /// </summary>
+        /// <param name="user">The user to get roles for</param>
+        /// <returns>List of user roles</returns>
+        public async Task<IList<string>> GetUserRolesAsync(AppUser user)
+        {
+            return await this.userManager.GetRolesAsync(user);
+        }
     }
 }

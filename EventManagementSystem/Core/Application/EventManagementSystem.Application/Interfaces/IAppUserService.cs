@@ -21,5 +21,18 @@ namespace EventManagementSystem.Application.Interfaces
 
         Task<bool> CheckEmailExists(string email);
 
+        /// <summary>
+        /// Gets the primary role of a user.
+        /// </summary>
+        /// <param name="user">The user to get the role for</param>
+        /// <returns>The user's primary role or empty string if no roles found</returns>
+        Task<string> GetUserRoleAsync(AppUser user);
+
+        /// <summary>
+        /// Gets all roles of a user.
+        /// </summary>
+        /// <param name="user">The user to get roles for</param>
+        /// <returns>List of user roles</returns>
+        Task<IList<string>> GetUserRolesAsync(AppUser user);
     }
 }
