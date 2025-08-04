@@ -1,9 +1,10 @@
 using DotNetEnv;
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
+using EventManagementSystem.API.Services;
 using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Application.Usecases.UserLogin;
+using EventManagementSystem.Application.Usecases.Login;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
@@ -39,9 +40,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Library Management System API",
+        Title = "Event Management System API",
         Version = "v1",
-        Description = "A .NET 9 Minimal API for Library Management System",
+        Description = "A .NET 9 Minimal API for Event Management System",
     });
 });
 
@@ -88,16 +89,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(UserLoginCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
 });
 
 // Register application services
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<MediatorPipelineService>();
 
 // Register FluentValidation validators
-builder.Services.AddValidatorsFromAssemblyContaining<UserLoginCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
 
 // Register generic repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -124,21 +126,23 @@ var app = builder.Build();
 // Enable CORS
 app.UseCors("DefaultCorsPolicy");
 
-foreach (var kvp in app.Configuration.AsEnumerable())
-{
-    Console.WriteLine($"{kvp.Key} = {kvp.Value}");
-}
+//foreach (var kvp in app.Configuration.AsEnumerable())
+//{
+//    Console.WriteLine($"{kvp.Key} = {kvp.Value}");
+//}
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "LMS API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Event Management System API v1");
         options.RoutePrefix = string.Empty; // Swagger UI at root
     });
     app.MapOpenApi();
 }
+
+app.UseHttpsRedirection();
 
 // Use global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();

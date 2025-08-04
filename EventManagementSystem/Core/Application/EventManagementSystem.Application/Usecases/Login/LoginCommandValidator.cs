@@ -1,16 +1,16 @@
-namespace EventManagementSystem.Application.Usecases.UserLogin
+namespace EventManagementSystem.Application.Usecases.Login
 {
     using FluentValidation;
 
-    public class UserLoginCommandValidator : AbstractValidator<UserLoginCommand>
+    public class LoginCommandValidator : AbstractValidator<LoginCommand>
     {
-        public UserLoginCommandValidator()
+        public LoginCommandValidator()
         {
-            RuleFor(x => x.Email)
+            this.RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Email format is invalid.");
 
-            RuleFor(x => x.Password)
+            this.RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required.");
         }
     }

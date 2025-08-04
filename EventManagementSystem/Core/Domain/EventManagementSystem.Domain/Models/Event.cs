@@ -2,8 +2,9 @@ namespace EventManagementSystem.Domain.Models
 {
     using System;
     using System.Collections.Generic;
+    using EventManagementSystem.Domain.Interfaces;
 
-    public class Event
+    public class Event : HasDto
     {
         public Guid Id { get; set; }
 
@@ -37,5 +38,48 @@ namespace EventManagementSystem.Domain.Models
 
         public int NoOfRegistrations { get => this.Registrations?.Count ?? 0; }
 
+        public object ToDto()
+        {
+            return new EventDTO
+            {
+                Id = this.Id,
+                Title = this.Title,
+                Description = this.Description,
+                EventDate = this.EventDate,
+                Location = this.Location,
+                Type = this.Type,
+                Capacity = this.Capacity,
+                IsOpenForRegistration = this.IsOpenForRegistration,
+                RegistrationCutoffDate = this.RegistrationCutoffDate,
+                NoOfRegistrations = this.NoOfRegistrations,
+                Image = this.Image?.ToDto() as EventImage.EventImageDTO,
+            };
+        }
+
+        public class EventDTO
+        {
+            public Guid Id { get; set; }
+
+            public string Title { get; set; } = string.Empty;
+
+            public string Description { get; set; } = string.Empty;
+
+            public DateTime EventDate { get; set; }
+
+            public string Location { get; set; } = string.Empty;
+
+            public string Type { get; set; } = string.Empty;
+
+            public int Capacity { get; set; }
+
+            public bool IsOpenForRegistration { get; set; }
+
+            public DateTime RegistrationCutoffDate { get; set; }
+
+            public int NoOfRegistrations { get; set; }
+
+            public EventImage.EventImageDTO? Image { get; set; }
+
+        }
     }
 }

@@ -1,8 +1,10 @@
-using System.Text.Json.Serialization;
-
 namespace EventManagementSystem.Domain.Models
 {
-    public class EventRegistration
+    using System;
+    using System.Text.Json.Serialization;
+    using EventManagementSystem.Domain.Interfaces;
+
+    public class EventRegistration : HasDto
     {
         public Guid Id { get; set; }
 
@@ -32,5 +34,40 @@ namespace EventManagementSystem.Domain.Models
         /// Must be loaded using GetWithIncludesAsync with "User".
         /// </summary>
         public virtual AppUser User { get; set; } = null!;
+
+        public object ToDto()
+        {
+            return new EventRegistrationDTO
+            {
+                Id = this.Id,
+                EventId = this.EventId,
+                UserId = this.UserId,
+                Name = this.Name,
+                Email = this.Email,
+                Phone = this.Phone,
+                RegisteredAt = this.RegisteredAt,
+                IsCanceled = this.IsCanceled,
+            };
+        }
+
+        public class EventRegistrationDTO
+        {
+            public Guid Id { get; set; }
+
+            public Guid EventId { get; set; }
+
+            public Guid UserId { get; set; }
+
+            public string Name { get; set; } = string.Empty;
+
+            public string Email { get; set; } = string.Empty;
+
+            public string Phone { get; set; } = string.Empty;
+
+            public DateTime RegisteredAt { get; set; }
+
+            public bool IsCanceled { get; set; }
+
+        }
     }
 }
