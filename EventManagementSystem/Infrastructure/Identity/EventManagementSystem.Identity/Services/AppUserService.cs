@@ -4,6 +4,8 @@
     using EventManagementSystem.Domain.Models;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.Extensions.Logging;
+    using Microsoft.AspNetCore.Http;
+    using System.Security.Claims;
 
     public class AppUserService : IAppUserService
     {
@@ -135,6 +137,54 @@
         public async Task<IList<string>> GetUserRolesAsync(AppUser user)
         {
             return await this.userManager.GetRolesAsync(user);
+        }
+    }
+
+    /// <summary>
+    /// Service for accessing current user context from HTTP requests
+    /// </summary>
+    public class CurrentUserService : ICurrentUserService
+    {
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly ILogger<CurrentUserService> logger;
+
+        public CurrentUserService(IHttpContextAccessor httpContextAccessor, ILogger<CurrentUserService> logger)
+        {
+            this.httpContextAccessor = httpContextAccessor;
+            this.logger = logger;
+        }
+
+        public Guid? GetCurrentUserId()
+        {
+            var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return null;
+            }
+
+            if (Guid.TryParse(userIdClaim, out var userId))
+            {
+                return userId;
+            }
+
+            logger.LogWarning("Invalid user ID format in JWT token: {UserIdClaim}", userIdClaim);
+            return null;
+        }
+
+        public string? GetCurrentUserEmail()
+        {
+            return httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+        }
+
+        public bool IsCurrentUserAdmin()
+        {
+            return httpContextAccessor.HttpContext?.User?.IsInRole("Admin") ?? false;
+        }
+
+        public bool IsAuthenticated()
+        {
+            return httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
         }
     }
 }

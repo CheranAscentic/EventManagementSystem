@@ -2,6 +2,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
 {
     using FluentValidation;
     using System;
+    using EventManagementSystem.Domain.Enums;
 
     public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
     {
@@ -16,7 +17,9 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             RuleFor(x => x.Location)
                 .NotEmpty().WithMessage("Location is required.");
             RuleFor(x => x.Type)
-                .NotEmpty().WithMessage("Type is required.");
+                .NotEmpty().WithMessage("Type is required.")
+                .Must(type => EventType.Types.Contains(type))
+                .WithMessage("Type must be a valid event type.");
             RuleFor(x => x.Capacity)
                 .GreaterThan(0).WithMessage("Capacity must be greater than zero.");
             RuleFor(x => x.RegistrationCutoffDate)

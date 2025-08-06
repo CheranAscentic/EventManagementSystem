@@ -35,4 +35,34 @@ namespace EventManagementSystem.Application.Interfaces
         /// <returns>List of user roles</returns>
         Task<IList<string>> GetUserRolesAsync(AppUser user);
     }
+
+    /// <summary>
+    /// Service for accessing current user context from HTTP requests
+    /// </summary>
+    public interface ICurrentUserService
+    {
+        /// <summary>
+        /// Gets the current user's ID from the JWT token
+        /// </summary>
+        /// <returns>Current user ID or null if not authenticated</returns>
+        Guid? GetCurrentUserId();
+
+        /// <summary>
+        /// Gets the current user's email from the JWT token
+        /// </summary>
+        /// <returns>Current user email or null if not authenticated</returns>
+        string? GetCurrentUserEmail();
+
+        /// <summary>
+        /// Checks if the current user is an admin
+        /// </summary>
+        /// <returns>True if current user is admin, false otherwise</returns>
+        bool IsCurrentUserAdmin();
+
+        /// <summary>
+        /// Checks if the current user is authenticated
+        /// </summary>
+        /// <returns>True if authenticated, false otherwise</returns>
+        bool IsAuthenticated();
+    }
 }
