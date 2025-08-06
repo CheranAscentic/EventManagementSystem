@@ -45,7 +45,7 @@ namespace EventManagementSystem.Domain.Models
             return new EventDTO
             {
                 Id = this.Id,
-
+                AdminId = this.AdminId,
                 Title = this.Title,
                 Description = this.Description,
                 EventDate = this.EventDate,

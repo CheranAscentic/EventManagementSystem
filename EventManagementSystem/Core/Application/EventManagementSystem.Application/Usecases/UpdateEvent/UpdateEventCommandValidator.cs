@@ -1,6 +1,8 @@
 namespace EventManagementSystem.Application.Usecases.UpdateEvent
 {
+    using EventManagementSystem.Domain.Enums;
     using FluentValidation;
+
     public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
     {
         public UpdateEventCommandValidator()
@@ -21,8 +23,8 @@ namespace EventManagementSystem.Application.Usecases.UpdateEvent
                 .WithMessage("Location, if provided, must not be empty.");
 
             this.RuleFor(x => x.Type)
-                .Must(t => t == null || !string.IsNullOrWhiteSpace(t))
-                .WithMessage("Type, if provided, must not be empty.");
+                .Must(t => t == null || (!string.IsNullOrWhiteSpace(t) && EventType.Types.Contains(t)))
+                .WithMessage("Type, if provided, must be a valid event type.");
 
             this.RuleFor(x => x.Capacity)
                 .Must(c => c == null || c > 0)

@@ -1,10 +1,12 @@
 using EventManagementSystem.API.Interface;
 using EventManagementSystem.API.Services;
+using EventManagementSystem.API.Authorizations;
 using EventManagementSystem.Application.Usecases.CreateEvent;
 using EventManagementSystem.Application.Usecases.UpdateEvent;
 using EventManagementSystem.Application.Usecases.DeleteEvent;
 using EventManagementSystem.Application.Usecases.GetEvent;
 using EventManagementSystem.Application.Usecases.GetEvents;
+using EventManagementSystem.Application.Usecases.GetEventTypes;
 using EventManagementSystem.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using EventManagementSystem.Application.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace EventManagementSystem.API.Endpoints
 {
@@ -27,31 +30,43 @@ namespace EventManagementSystem.API.Endpoints
                 .WithName("CreateEvent")
                 .WithSummary("Create a new event.")
                 .Produces<Result<object>>(StatusCodes.Status201Created)
-                .ProducesProblem(StatusCodes.Status400BadRequest);
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
 
             events.MapPut("/{id}", HandleUpdateEvent)
                 .WithName("UpdateEvent")
                 .WithSummary("Update an existing event.")
                 .Produces<Result<object>>(StatusCodes.Status200OK)
-                .ProducesProblem(StatusCodes.Status400BadRequest);
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
 
             events.MapDelete("/{id}", HandleDeleteEvent)
                 .WithName("DeleteEvent")
                 .WithSummary("Delete an event.")
                 .Produces<Result<object>>(StatusCodes.Status200OK)
-                .ProducesProblem(StatusCodes.Status404NotFound);
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
 
             events.MapGet("/{id}", HandleGetEvent)
                 .WithName("GetEvent")
                 .WithSummary("Get details of a specific event.")
                 .Produces<Result<object>>(StatusCodes.Status200OK)
-                .ProducesProblem(StatusCodes.Status404NotFound);
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .AllowAnonymous();
 
             events.MapGet("/", HandleGetEvents)
                 .WithName("GetEvents")
                 .WithSummary("Get a list of all events.")
                 .Produces<Result<object>>(StatusCodes.Status200OK)
-                .ProducesProblem(StatusCodes.Status400BadRequest);
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .AllowAnonymous();
+
+            events.MapGet("/types", HandleGetEventTypes)
+                .WithName("GetEventTypes")
+                .WithSummary("Get a list of all supported event types.")
+                .Produces<Result<object>>(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .AllowAnonymous();
         }
 
         private async Task<IResult> HandleCreateEvent(
@@ -120,6 +135,17 @@ namespace EventManagementSystem.API.Endpoints
             logger.LogDebug("GetEvents request data: none");
             var getRequest = new GetEventsQuery();
             return await pipelineService.ExecuteAsync(getRequest, mediator, logger);
+        }
+
+        private async Task<IResult> HandleGetEventTypes(
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<EventsEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            logger.LogInformation("GetEventTypes request received.");
+            logger.LogDebug("GetEventTypes request data: none");
+            var query = new GetEventTypesQuery();
+            return await pipelineService.ExecuteAsync(query, mediator, logger);
         }
     }
 }

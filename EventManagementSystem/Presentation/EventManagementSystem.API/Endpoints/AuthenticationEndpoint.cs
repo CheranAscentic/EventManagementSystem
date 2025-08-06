@@ -19,27 +19,30 @@ namespace EventManagementSystem.API.Endpoints
                 .WithTags("Authentication Endpoints")
                 .WithOpenApi();
 
-            // Unified login endpoint
+            // Unified login endpoint - Public access
             auth.MapPost("/login", HandleLogin)
                 .WithName("Login")
                 .WithSummary("Logs in a user (admin or regular user) with email and password.")
                 .Produces(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest)
-                .ProducesProblem(StatusCodes.Status401Unauthorized);
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .AllowAnonymous();
 
-            // User registration endpoint
+            // User registration endpoint - Public access
             auth.MapPost("/register/user", HandleUserRegister)
                 .WithName("RegisterUser")
                 .WithSummary("Register a new regular user with email, password, first name, and last name.")
                 .Produces(StatusCodes.Status201Created)
-                .ProducesProblem(StatusCodes.Status400BadRequest);
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .AllowAnonymous();
 
-            // Admin registration endpoint
+            // Admin registration endpoint - Public access (could be restricted in production)
             auth.MapPost("/register/admin", HandleAdminRegister)
                 .WithName("RegisterAdmin")
                 .WithSummary("Register a new admin user with email, password, first name, last name, and username.")
                 .Produces(StatusCodes.Status201Created)
-                .ProducesProblem(StatusCodes.Status400BadRequest);
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .AllowAnonymous();
         }
 
         private async Task<IResult> HandleLogin(
