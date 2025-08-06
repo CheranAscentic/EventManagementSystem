@@ -16,6 +16,8 @@ namespace EventManagementSystem.Persistence.Configurations
             builder.Property(e => e.Capacity).IsRequired();
             builder.Property(e => e.IsOpenForRegistration).IsRequired();
             builder.Property(e => e.RegistrationCutoffDate).IsRequired();
+            builder.Property(e => e.AdminId).IsRequired();
+            builder.Ignore(e => e.NoOfRegistrations);
 
             builder.HasOne(e => e.Image)
                 .WithOne(i => i.Event)

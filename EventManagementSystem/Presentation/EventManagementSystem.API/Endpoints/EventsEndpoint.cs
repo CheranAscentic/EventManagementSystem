@@ -7,6 +7,7 @@ using EventManagementSystem.Application.Usecases.DeleteEvent;
 using EventManagementSystem.Application.Usecases.GetEvent;
 using EventManagementSystem.Application.Usecases.GetEvents;
 using EventManagementSystem.Application.Usecases.GetEventTypes;
+using EventManagementSystem.Application.Usecases.GetOwnerEvents;
 using EventManagementSystem.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,14 @@ namespace EventManagementSystem.API.Endpoints
                 .Produces<Result<object>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status400BadRequest)
                 .AllowAnonymous();
+
+            events.MapGet("/owner/{ownerId}", HandleGetOwnerEvents)
+                .WithName("GetOwnerEvents")
+                .WithSummary("Get all events owned by a specific admin user.")
+                .Produces<Result<object>>(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status403Forbidden)
+                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
 
             events.MapGet("/types", HandleGetEventTypes)
                 .WithName("GetEventTypes")
@@ -134,6 +143,25 @@ namespace EventManagementSystem.API.Endpoints
             logger.LogInformation("GetEvents request received.");
             logger.LogDebug("GetEvents request data: none");
             var getRequest = new GetEventsQuery();
+            return await pipelineService.ExecuteAsync(getRequest, mediator, logger);
+        }
+
+        private async Task<IResult> HandleGetOwnerEvents(
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<EventsEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService,
+            HttpContext httpContext)
+        {
+            // Extract ownerId from JWT claims
+            var ownerIdClaim = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(ownerIdClaim) || !Guid.TryParse(ownerIdClaim, out var ownerId))
+            {
+                logger.LogWarning("GetOwnerEvents: Could not extract valid ownerId from JWT claims.");
+                return Results.Problem("Invalid or missing ownerId in token.", statusCode: StatusCodes.Status401Unauthorized);
+            }
+            logger.LogInformation("GetOwnerEvents request received. OwnerId: {OwnerId}", ownerId);
+            logger.LogDebug("GetOwnerEvents request data: {OwnerId}", ownerId);
+            var getRequest = new GetOwnerEventsQuery(ownerId);
             return await pipelineService.ExecuteAsync(getRequest, mediator, logger);
         }
 

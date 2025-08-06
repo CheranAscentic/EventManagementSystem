@@ -1,13 +1,7 @@
-﻿using EventManagementSystem.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace EventManagementSystem.Application.DTO
 {
-    internal class UserDTO : IsDto
+    using EventManagementSystem.Domain.Interfaces;
+    public class UserDTO : IsDto
     {
         public Guid UserId { get; set; }
 
