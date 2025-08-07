@@ -18,7 +18,7 @@
         {
             this.configuration = config;
             this.userManager = userManager;
-            this.tokenLifeSpan = TimeSpan.FromHours(1);
+            this.tokenLifeSpan = TimeSpan.FromHours(3);
         }
 
         public string CreateToken(AppUser user)
