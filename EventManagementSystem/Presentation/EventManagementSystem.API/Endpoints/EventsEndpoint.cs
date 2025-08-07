@@ -16,6 +16,7 @@ using EventManagementSystem.Application.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using EventManagementSystem.Application.Usecases.GetEventsExtended;
 
 namespace EventManagementSystem.API.Endpoints
 {
@@ -73,6 +74,13 @@ namespace EventManagementSystem.API.Endpoints
             events.MapGet("/types", HandleGetEventTypes)
                 .WithName("GetEventTypes")
                 .WithSummary("Get a list of all supported event types.")
+                .Produces<Result<object>>(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .AllowAnonymous();
+
+            events.MapPost("/GetSorted", HandleGetEventsExtended)
+                .WithName("GetEventsExtended")
+                .WithSummary("Get a list of events paginated and sorted")
                 .Produces<Result<object>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .AllowAnonymous();
@@ -174,6 +182,23 @@ namespace EventManagementSystem.API.Endpoints
             logger.LogDebug("GetEventTypes request data: none");
             var query = new GetEventTypesQuery();
             return await pipelineService.ExecuteAsync(query, mediator, logger);
+        }
+
+        private async Task<IResult> HandleGetEventsExtended(
+            [FromBody] GetEventsExtendedQuery request,
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<EventsEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            logger.LogInformation(
+                "GetEventsExtended request received. Page: {PageNumber}, ItemsPerPage: {ItemsPerPage}, SearchTerm: {SearchTerm}, EventType: {EventType}",
+                request.PageNumber,
+                request.ItemsPerPage,
+                request.SearchTerm,
+                request.EventType);
+
+            logger.LogDebug("GetEventsExtended request data: {Request}", request);
+            return await pipelineService.ExecuteAsync(request, mediator, logger);
         }
     }
 }
