@@ -65,8 +65,9 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
                 return Result<EventImage>.Failure("Event image update failed", null, 403, "Only the event owner can update the event image.");
             }
 
+            eventEntity = await this.eventRepository.GetWithIncludesAsync(command.EventId, "Image");
             // 2. Get EventImage (if exists)
-            var eventImage = await this.eventImageRepository.GetWithIncludesAsync(command.EventId, "Event");
+            var eventImage = eventEntity!.Image;
 
             if (eventImage != null)
             {
