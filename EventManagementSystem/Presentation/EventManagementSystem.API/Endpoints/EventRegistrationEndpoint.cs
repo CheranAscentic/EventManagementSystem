@@ -1,19 +1,20 @@
 namespace EventManagementSystem.API.Endpoints
 {
-    using System.Collections.Generic;
+    using EventManagementSystem.API.Authorizations;
     using EventManagementSystem.API.Interface;
     using EventManagementSystem.API.Services;
-    using EventManagementSystem.API.Authorizations;
-    using EventManagementSystem.Application.Usecases.ViewUserEventRegistrations;
-    using EventManagementSystem.Application.Usecases.ViewEventEventRegistrations;
+    using EventManagementSystem.Application.DTO;
+    using EventManagementSystem.Application.Usecases.CancelUserEventRegistration;
+    using EventManagementSystem.Application.Usecases.MakeUserEventRegistration;
     using EventManagementSystem.Application.Usecases.UploadEventImage;
+    using EventManagementSystem.Application.Usecases.ViewEventEventRegistrations;
+    using EventManagementSystem.Application.Usecases.ViewUserEventRegistrations;
     using EventManagementSystem.Domain.Models;
     using MediatR;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using EventManagementSystem.Application.DTO;
-    using EventManagementSystem.Application.Usecases.MakeUserEventRegistration;
-    using EventManagementSystem.Application.Usecases.CancelUserEventRegistration;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public class EventRegistrationEndpoint : IEndpointGroup
@@ -64,10 +65,16 @@ namespace EventManagementSystem.API.Endpoints
             [FromBody] MakeUserEventRegistrationCommand request,
             [FromServices] IMediator mediator,
             [FromServices] ILogger<EventRegistrationEndpoint> logger,
-            [FromServices] MediatorPipelineService pipelineService)
+            [FromServices] MediatorPipelineService pipelineService,
+            HttpContext httpContext)
         {
             logger.LogInformation("CreateEventRegistration request received. EventId: {EventId}, AppUserId: {AppUserId}", request.EventId, request.AppUserId);
             logger.LogDebug("CreateEventRegistration request data: {Request}", request);
+
+            var currentUserId = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            request.AppUserId = Guid.Parse(currentUserId!);
+
             return await pipelineService.ExecuteAsync(request, mediator, logger);
         }
 
