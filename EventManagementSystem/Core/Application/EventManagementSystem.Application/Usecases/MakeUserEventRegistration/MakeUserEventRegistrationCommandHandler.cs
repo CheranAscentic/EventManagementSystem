@@ -101,7 +101,6 @@ namespace EventManagementSystem.Application.Usecases.MakeUserEventRegistration
                 RegisteredAt = DateTime.UtcNow,
                 IsCanceled = false,
                 Event = eventEntity,
-                User = user,
             };
 
             await this.eventRegistrationRepository.AddAsync(registration);

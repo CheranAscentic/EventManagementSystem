@@ -56,6 +56,7 @@ namespace EventManagementSystem.Domain.Models
                 RegistrationCutoffDate = this.RegistrationCutoffDate,
                 NoOfRegistrations = this.NoOfRegistrations,
                 ImageUrl = this.Image?.ImageUrl ?? string.Empty,
+                RegisteredIds = this.Registrations?.Select(r => r.UserId).ToList(),
             };
         }
 
@@ -85,6 +86,7 @@ namespace EventManagementSystem.Domain.Models
 
             public string? ImageUrl { get; set; }
 
+            public List<Guid>? RegisteredIds { get; set; }
         }
     }
 }

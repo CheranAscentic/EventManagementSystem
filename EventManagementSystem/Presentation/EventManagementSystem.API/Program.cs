@@ -194,6 +194,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 // Register repositories for Event, EventRegistration, EventImage
 builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
 builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
+builder.Services.AddScoped<IExtendedEventsRepository, ExtendedEventsRepository>();
 builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
 
 // Set up CORS

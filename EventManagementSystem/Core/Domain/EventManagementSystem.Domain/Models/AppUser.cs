@@ -58,7 +58,7 @@
             };
         }
 
-        public class UserDTO
+        public class UserDTO : IsDto
         {
             public Guid UserId { get; set; }
 
