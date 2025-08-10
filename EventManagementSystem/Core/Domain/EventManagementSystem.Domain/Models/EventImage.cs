@@ -13,7 +13,7 @@ namespace EventManagementSystem.Domain.Models
         public string ImageUrl { get; set; } = null!;
 
         /// <summary>
-        /// Navigation property for the event associated with this image.
+        /// Gets or Sets Navigation property for the event associated with this image.
         /// Must be loaded using GetWithIncludesAsync with "Event".
         /// </summary>
         [JsonIgnore]

@@ -36,6 +36,7 @@
     <ProjectReference Include="..\..\Core\Domain\EventManagementSystem.Domain\EventManagementSystem.Domain.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Identity\EventManagementSystem.Identity\EventManagementSystem.Identity.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Persistence\EventManagementSystem.Persistence\EventManagementSystem.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Storage\EventManagementSystem.Storage\EventManagementSystem.Storage.csproj" />
   </ItemGroup>
 
 </Project>
