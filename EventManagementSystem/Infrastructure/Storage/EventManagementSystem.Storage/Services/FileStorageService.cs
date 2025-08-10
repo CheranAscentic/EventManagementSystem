@@ -10,6 +10,7 @@
         private readonly Client client;
         private readonly ILogger<FileStorageService> logger;
         private readonly string bucketName;
+        private readonly string serviceRoleKey;
 
         public FileStorageService(IConfiguration configuration, ILogger<FileStorageService> logger)
         {
@@ -18,37 +19,21 @@
             // Get configuration values
             var supabaseUrl = configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase:Url configuration is missing");
             var supabaseKey = configuration["Supabase:Key"] ?? throw new InvalidOperationException("Supabase:Key configuration is missing");
+            this.serviceRoleKey = configuration["Supabase:ServiceRoleKey"] ?? throw new InvalidOperationException("Supabase:ServiceRoleKey configuration is missing");
             this.bucketName = configuration["Supabase:StorageBucket"] ?? "event-images";
 
             try
             {
                 this.client = new Client(
                     supabaseUrl,
-                    supabaseKey,
+                    this.serviceRoleKey, // Use service role key for server-side operations
                     new SupabaseOptions
                     {
-                        AutoConnectRealtime = true,
+                        AutoConnectRealtime = false,
                     }
                 );
 
-                this.client.InitializeAsync();
-
                 this.logger.LogInformation("Supabase client initialized successfully for bucket: {BucketName}", bucketName);
-
-                //var bucket = client.Storage.GetBucket(bucketName);
-
-                //if (bucket == null)
-                //{
-                //    this.logger.LogInformation("Creating bucket: {BucketName}", bucketName);
-                //    client.Storage.CreateBucket(bucketName, new Supabase.Storage.BucketUpsertOptions
-                //    {
-                //        Public = true // Set to true if you want the files to be publicly accessible
-                //    });
-
-                //    this.logger.LogInformation("Bucket created successfully: {BucketName}", bucketName);
-                //}
-
-                //this.bucket = client.Storage.GetBucket(bucketName) ?? throw new ArgumentNullException(nameof(this.bucket));
             }
             catch (Exception ex)
             {
@@ -72,12 +57,13 @@
                 await imageStream.CopyToAsync(memoryStream);
                 var fileBytes = memoryStream.ToArray();
 
-                // Upload to Supabase Storage
+                // Upload to Supabase Storage with explicit options
                 await client.Storage
                     .From(bucketName)
                     .Upload(fileBytes, uniqueFileName, new Supabase.Storage.FileOptions
                     {
-                        Upsert = false // Don't overwrite existing files
+                        Upsert = false, // Don't overwrite existing files
+                        ContentType = GetContentType(fileExtension)
                     });
 
                 // Get the public URL
@@ -90,7 +76,7 @@
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to upload file: {FileName} for event: {EventId}", fileName, eventId);
+                logger.LogError(ex, "Failed to upload file: {FileName} for event: {EventId}. Error: {Error}", fileName, eventId, ex.Message);
                 throw;
             }
         }
@@ -130,6 +116,18 @@
                 logger.LogError(ex, "Failed to get public URL for file: {FileName}", fileName);
                 throw;
             }
+        }
+
+        private static string GetContentType(string fileExtension)
+        {
+            return fileExtension.ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
         }
     }
 }

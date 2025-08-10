@@ -52,13 +52,6 @@ namespace EventManagementSystem.API.Endpoints
                 .Produces<Result<object>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
-
-            registrations.MapPost("/event-image", HandleUploadEventImage)
-                .WithName("UploadEventImage")
-                .WithSummary("Upload an image for an event.")
-                .Produces<Result<object>>(StatusCodes.Status201Created)
-                .ProducesProblem(StatusCodes.Status400BadRequest)
-                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole);
         }
 
         private async Task<IResult> HandleCreateEventRegistration(
@@ -129,17 +122,6 @@ namespace EventManagementSystem.API.Endpoints
             logger.LogDebug("ViewEventEventRegistrations request data: {EventId}", eventId);
             var query = new ViewEventEventRegistrationsQuery { EventId = eventId };
             return await pipelineService.ExecuteAsync(query, mediator, logger);
-        }
-
-        private async Task<IResult> HandleUploadEventImage(
-            [FromBody] UpdateEventImageCommand request,
-            [FromServices] IMediator mediator,
-            [FromServices] ILogger<EventRegistrationEndpoint> logger,
-            [FromServices] MediatorPipelineService pipelineService)
-        {
-            logger.LogInformation("UploadEventImage request received. EventId: {EventId}, ImageUrl: {ImageUrl}", request.EventId, request.ImageUrl);
-            logger.LogDebug("UploadEventImage request data: {Request}", request);
-            return await pipelineService.ExecuteAsync(request, mediator, logger);
         }
     }
 }
