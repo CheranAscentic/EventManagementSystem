@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventManagementSystem.Identity.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMigration : Migration
+    public partial class initMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -166,7 +166,7 @@ namespace EventManagementSystem.Identity.Migrations
                 values: new object[,]
                 {
                     { new Guid("411d52bb-b369-4a31-81c7-d149317f8105"), null, "Admin", "ADMIN" },
-                    { new Guid("c1122f1a-3748-466b-af45-ac3992d2e121"), null, "Attendee", "ATTENDEE" }
+                    { new Guid("c1122f1a-3748-466b-af45-ac3992d2e121"), null, "User", "USER" }
                 });
 
             migrationBuilder.CreateIndex(

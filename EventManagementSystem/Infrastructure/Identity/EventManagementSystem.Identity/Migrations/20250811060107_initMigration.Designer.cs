@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventManagementSystem.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20250731171632_NewIdentityMigration")]
-    partial class NewIdentityMigration
+    [Migration("20250811060107_initMigration")]
+    partial class initMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
