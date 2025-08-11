@@ -14,14 +14,15 @@ namespace EventManagementSystem.Persistence.Configurations
             builder.Property(r => r.Phone).IsRequired().HasMaxLength(20);
             builder.Property(r => r.RegisteredAt).IsRequired();
             builder.Property(r => r.IsCanceled).IsRequired();
+            builder.Property(r => r.UserId).IsRequired(); // Ensure UserId is configured
 
             builder.HasOne(r => r.Event)
                 .WithMany(e => e.Registrations)
                 .HasForeignKey(r => r.EventId);
 
-            builder.HasOne(r => r.User)
-                .WithMany()
-                .HasForeignKey(r => r.UserId);
+            // Ignore cross-context navigation property
+            // User navigation property references AppUser which is in IdentityDbContext
+            builder.Ignore(r => r.User);
         }
     }
 }

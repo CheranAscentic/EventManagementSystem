@@ -1,9 +1,9 @@
-using EventManagementSystem.Domain.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace EventManagementSystem.Persistence.Configurations
 {
+    using EventManagementSystem.Domain.Models;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
     public class EventConfiguration : IEntityTypeConfiguration<Event>
     {
         public void Configure(EntityTypeBuilder<Event> builder)
@@ -17,7 +17,10 @@ namespace EventManagementSystem.Persistence.Configurations
             builder.Property(e => e.IsOpenForRegistration).IsRequired();
             builder.Property(e => e.RegistrationCutoffDate).IsRequired();
             builder.Property(e => e.AdminId).IsRequired();
+
+            // Ignore computed properties and cross-context navigation properties
             builder.Ignore(e => e.NoOfRegistrations);
+            builder.Ignore(e => e.AdminUser); // AdminUser is in IdentityDbContext, cannot create FK relationship
 
             builder.HasOne(e => e.Image)
                 .WithOne(i => i.Event)

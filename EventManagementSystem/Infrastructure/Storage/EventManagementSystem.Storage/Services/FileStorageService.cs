@@ -10,43 +10,26 @@
         private readonly Client client;
         private readonly ILogger<FileStorageService> logger;
         private readonly string bucketName;
-        private readonly string serviceRoleKey;
 
-        public FileStorageService(IConfiguration configuration, ILogger<FileStorageService> logger)
+        public FileStorageService(
+            Client supabaseClient,
+            IConfiguration configuration, 
+            ILogger<FileStorageService> logger)
         {
+            this.client = supabaseClient ?? throw new ArgumentNullException(nameof(supabaseClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            // Get configuration values
-            var supabaseUrl = configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase:Url configuration is missing");
-            var supabaseKey = configuration["Supabase:Key"] ?? throw new InvalidOperationException("Supabase:Key configuration is missing");
-            this.serviceRoleKey = configuration["Supabase:ServiceRoleKey"] ?? throw new InvalidOperationException("Supabase:ServiceRoleKey configuration is missing");
+            // Get bucket name from configuration
             this.bucketName = configuration["Supabase:StorageBucket"] ?? "event-images";
 
-            try
-            {
-                this.client = new Client(
-                    supabaseUrl,
-                    this.serviceRoleKey, // Use service role key for server-side operations
-                    new SupabaseOptions
-                    {
-                        AutoConnectRealtime = false,
-                    }
-                );
-
-                this.logger.LogInformation("Supabase client initialized successfully for bucket: {BucketName}", bucketName);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Failed to initialize Supabase client");
-                throw;
-            }
+            this.logger.LogInformation("FileStorageService initialized with bucket: {BucketName}", this.bucketName);
         }
 
         public async Task<string> UploadEventImageAsync(Stream imageStream, string fileName, Guid eventId)
         {
             try
             {
-                logger.LogInformation("Starting upload for file: {FileName} for event: {EventId}", fileName, eventId);
+                this.logger.LogInformation("Starting upload for file: {FileName} for event: {EventId}", fileName, eventId);
 
                 // Create a unique file name to avoid conflicts
                 var fileExtension = Path.GetExtension(fileName);
@@ -58,17 +41,17 @@
                 var fileBytes = memoryStream.ToArray();
 
                 // Upload to Supabase Storage with explicit options
-                await client.Storage
-                    .From(bucketName)
+                await this.client.Storage
+                    .From(this.bucketName)
                     .Upload(fileBytes, uniqueFileName, new Supabase.Storage.FileOptions
                     {
                         Upsert = false, // Don't overwrite existing files
-                        ContentType = GetContentType(fileExtension)
+                        ContentType = GetContentType(fileExtension),
                     });
 
                 // Get the public URL
-                var publicUrl = client.Storage
-                    .From(bucketName)
+                var publicUrl = this.client.Storage
+                    .From(this.bucketName)
                     .GetPublicUrl(uniqueFileName);
 
                 logger.LogInformation("File uploaded successfully. Public URL: {PublicUrl}", publicUrl);
@@ -76,7 +59,7 @@
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to upload file: {FileName} for event: {EventId}. Error: {Error}", fileName, eventId, ex.Message);
+                this.logger.LogError(ex, "Failed to upload file: {FileName} for event: {EventId}. Error: {Error}", fileName, eventId, ex.Message);
                 throw;
             }
         }
@@ -87,8 +70,8 @@
             {
                 logger.LogInformation("Deleting file: {FileName}", fileName);
 
-                await client.Storage
-                    .From(bucketName)
+                await this.client.Storage
+                    .From(this.bucketName)
                     .Remove(fileName);
 
                 logger.LogInformation("File deleted successfully: {FileName}", fileName);
@@ -105,8 +88,8 @@
         {
             try
             {
-                var publicUrl = client.Storage
-                    .From(bucketName)
+                var publicUrl = this.client.Storage
+                    .From(this.bucketName)
                     .GetPublicUrl(fileName);
 
                 return publicUrl;
