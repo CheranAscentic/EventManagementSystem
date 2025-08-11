@@ -289,17 +289,22 @@ app.UseCors("DefaultCorsPolicy");
 
 if (app.Environment.IsDevelopment())
 {
+    // Only load .env in development
+    Env.Load();
+    
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Event Management System API v1");
-        options.RoutePrefix = string.Empty; // Swagger UI at root
+        options.RoutePrefix = string.Empty;
     });
     app.MapOpenApi();
 }
-
-//// Use HTTPS redirection early (before authentication)
-//app.UseHttpsRedirection();
+else
+{
+    // Production should use environment variables directly
+    app.UseHttpsRedirection();
+}
 
 // Use global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();
