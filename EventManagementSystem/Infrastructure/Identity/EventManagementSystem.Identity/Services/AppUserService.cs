@@ -38,13 +38,13 @@
             }
 
             var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
-            logger.LogError("User registration failed for Email: {Email}. Errors: {Errors}", email, errorMessages);
+            this.logger.LogError("User registration failed for Email: {Email}. Errors: {Errors}", email, errorMessages);
             throw new System.Exception(errorMessages);
         }
 
         public async Task<AppUser?> LoginAsync(string email, string password)
         {
-            logger.LogInformation("Login attempt. Email: {Email}", email);
+            this.logger.LogInformation("Login attempt. Email: {Email}", email);
             var user = await this.userManager.FindByEmailAsync(email);
 
             if (user == null)
@@ -69,7 +69,7 @@
 
         public async Task<AppUser?> DeleteUserAsync(string userId)
         {
-            logger.LogInformation("Deleting user. UserId: {UserId}", userId);
+            this.logger.LogInformation("Deleting user. UserId: {UserId}", userId);
             var user = await this.userManager.FindByIdAsync(userId);
 
             if (user == null)
@@ -88,7 +88,7 @@
 
         public async Task<AppUser?> UpdateUserAsync(Guid userId, string userName, string firstName, string lastName, string phoneNumber)
         {
-            logger.LogInformation("Updating user. UserId: {UserId}", userId);
+            this.logger.LogInformation("Updating user. UserId: {UserId}", userId);
             var user = await this.userManager.FindByIdAsync(userId.ToString());
 
             if (user == null)
@@ -168,7 +168,7 @@
                 return userId;
             }
 
-            logger.LogWarning("Invalid user ID format in JWT token: {UserIdClaim}", userIdClaim);
+            this.logger.LogWarning("Invalid user ID format in JWT token: {UserIdClaim}", userIdClaim);
             return null;
         }
 
