@@ -18,6 +18,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
         private readonly ILogger<CreateEventCommandHandler> logger;
         private readonly IConfiguration configuration;
         private readonly ICurrentUserService currentUserService;
+        private readonly IFileStorageService fileStorageService;
 
         public CreateEventCommandHandler(
             IRepository<Event> eventRepository,
@@ -25,7 +26,8 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             IUnitOfWork unitOfWork,
             ILogger<CreateEventCommandHandler> logger,
             IConfiguration configuration,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            IFileStorageService fileStorageService)
         {
             this.repository = eventRepository;
             this.eventImageRepository = eventImageRepository;
@@ -33,6 +35,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             this.logger = logger;
             this.configuration = configuration;
             this.currentUserService = currentUserService;
+            this.fileStorageService = fileStorageService;
         }
 
         public async Task<Result<Event>> Handle(CreateEventCommand command, CancellationToken cancellationToken = default)
@@ -71,8 +74,21 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             await this.repository.AddAsync(newEvent);
             await this.unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Get default image URL from file storage service
+            string defaultImageUrl;
+            try
+            {
+                defaultImageUrl = this.fileStorageService.GetPublicUrl("default.jpeg");
+                this.logger.LogInformation("Retrieved default image URL from storage: {DefaultImageUrl}", defaultImageUrl);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, "Failed to get default image from storage, falling back to configuration");
+                // Fallback to configuration if storage fails
+                defaultImageUrl = this.configuration["Default:EventImageURL"] ?? string.Empty;
+            }
+
             // Create default EventImage
-            var defaultImageUrl = this.configuration["Default:EventImageURL"] ?? string.Empty;
             var eventImage = new EventImage
             {
                 Id = Guid.NewGuid(),

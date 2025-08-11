@@ -16,19 +16,23 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
         private readonly IUnitOfWork unitOfWork;
         private readonly ILogger<UpdateEventImageCommandHandler> logger;
         private readonly ICurrentUserService currentUserService;
+        private readonly IFileStorageService fileStorageService;
+
 
         public UpdateEventImageCommandHandler(
             IRepository<Event> eventRepository,
             IRepository<EventImage> eventImageRepository,
             IUnitOfWork unitOfWork,
             ILogger<UpdateEventImageCommandHandler> logger,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            IFileStorageService fileStorageService)
         {
             this.eventRepository = eventRepository;
             this.eventImageRepository = eventImageRepository;
             this.unitOfWork = unitOfWork;
             this.logger = logger;
             this.currentUserService = currentUserService;
+            this.fileStorageService = fileStorageService;
         }
 
         public async Task<Result<EventImage>> Handle(UpdateEventImageCommand command, CancellationToken cancellationToken)
@@ -65,34 +69,63 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
                 return Result<EventImage>.Failure("Event image update failed", null, 403, "Only the event owner can update the event image.");
             }
 
-            eventEntity = await this.eventRepository.GetWithIncludesAsync(command.EventId, "Image");
-            // 2. Get EventImage (if exists)
-            var eventImage = eventEntity!.Image;
-
-            if (eventImage != null)
+            try
             {
-                // Update existing image
-                eventImage.ImageUrl = command.ImageUrl;
-                await this.eventImageRepository.UpdateAsync(eventImage);
-                this.logger.LogInformation("Updated image for event {EventId} by user {UserId}", command.EventId, currentUserId);
-            }
-            else
-            {
-                // Create new image
-                eventImage = new EventImage
+                // Upload image to storage service
+                string imageUrl;
+                using (var imageStream = command.ImageFile.OpenReadStream())
                 {
-                    Id = Guid.NewGuid(),
-                    EventId = command.EventId,
-                    ImageUrl = command.ImageUrl,
-                    Event = eventEntity,
-                };
-                await this.eventImageRepository.AddAsync(eventImage);
-                this.logger.LogInformation("Created new image for event {EventId} by user {UserId}", command.EventId, currentUserId);
-            }
+                    this.logger.LogInformation("Uploading image to storage for event {EventId}", command.EventId);
+                    imageUrl = await this.fileStorageService.UploadEventImageAsync(
+                        imageStream,
+                        command.ImageFile.FileName,
+                        command.EventId);
+                }
 
-            await this.unitOfWork.SaveChangesAsync(cancellationToken);
-            this.logger.LogInformation("Image upload successful for event {EventId} by user {UserId}", command.EventId, currentUserId);
-            return Result<EventImage>.Success("Image uploaded successfully.", eventImage, 200);
+                this.logger.LogInformation("Image uploaded successfully to storage. URL: {ImageUrl}", imageUrl);
+
+                // Get event with image relationship
+                eventEntity = await this.eventRepository.GetWithIncludesAsync(command.EventId, "Image");
+
+                // 2. Get EventImage (if exists)
+                var eventImage = eventEntity!.Image;
+
+                if (eventImage != null)
+                {
+                    // Update existing image
+                    var oldImageUrl = eventImage.ImageUrl;
+                    eventImage.ImageUrl = imageUrl;
+                    await this.eventImageRepository.UpdateAsync(eventImage);
+                    this.logger.LogInformation("Updated existing image for event {EventId} by user {UserId}. Old URL: {OldUrl}, New URL: {NewUrl}",
+                        command.EventId, currentUserId, oldImageUrl, imageUrl);
+                }
+                else
+                {
+                    // Create new image
+                    eventImage = new EventImage
+                    {
+                        Id = Guid.NewGuid(),
+                        EventId = command.EventId,
+                        ImageUrl = imageUrl,
+                        Event = eventEntity,
+                    };
+                    await this.eventImageRepository.AddAsync(eventImage);
+                    this.logger.LogInformation("Created new image for event {EventId} by user {UserId}. URL: {ImageUrl}",
+                        command.EventId, currentUserId, imageUrl);
+                }
+
+                await this.unitOfWork.SaveChangesAsync(cancellationToken);
+                this.logger.LogInformation("Image upload and database update completed successfully for event {EventId} by user {UserId}",
+                    command.EventId, currentUserId);
+
+                return Result<EventImage>.Success("Image uploaded successfully.", eventImage, 200);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Failed to upload image for event {EventId} by user {UserId}. Error: {Error}",
+                    command.EventId, currentUserId, ex.Message);
+                return Result<EventImage>.Failure("Image upload failed", null, 500, "An error occurred while uploading the image. Please try again.");
+            }
         }
     }
 }

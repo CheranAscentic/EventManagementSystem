@@ -4,11 +4,12 @@ namespace EventManagementSystem.Application.Usecases.UploadEventImage
     using EventManagementSystem.Application.DTO;
     using EventManagementSystem.Domain.Models;
     using MediatR;
+    using Microsoft.AspNetCore.Http;
 
     public class UpdateEventImageCommand : IRequest<Result<EventImage>>
     {
         public Guid EventId { get; set; }
 
-        public string ImageUrl { get; set; } = string.Empty;
+        public IFormFile ImageFile { get; set; } = null!;
     }
 }

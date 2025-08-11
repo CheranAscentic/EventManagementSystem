@@ -22,6 +22,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Serilog;
+using EventManagementSystem.Storage.Services;
 
 // Load environment variables from .env file
 Env.Load();
@@ -196,6 +197,8 @@ builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
 builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
 builder.Services.AddScoped<IExtendedEventsRepository, ExtendedEventsRepository>();
 builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
+// Add this if not already present
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // Set up CORS
 builder.Services.AddCors(options =>

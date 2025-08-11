@@ -21,13 +21,16 @@ namespace EventManagementSystem.Application.Usecases.GetEventsExtended
     public class GetEventsExtendedQueryHandler : IRequestHandler<GetEventsExtendedQuery, Result<PaginatedResult<Event>>>
     {
         private readonly IExtendedEventsRepository repository;
+        private readonly IAppUserService appUserService;
         private readonly ILogger<GetEventsExtendedQueryHandler> logger;
 
         public GetEventsExtendedQueryHandler(
-            IExtendedEventsRepository repository, 
+            IExtendedEventsRepository repository,
+            IAppUserService appUserService,
             ILogger<GetEventsExtendedQueryHandler> logger)
         {
             this.repository = repository;
+            this.appUserService = appUserService;
             this.logger = logger;
         }
 
@@ -56,6 +59,25 @@ namespace EventManagementSystem.Application.Usecases.GetEventsExtended
                     "Image",
                     "Registrations"); // Include navigation properties
 
+                // Manually load AdminUser for each event since it's in a different DbContext
+                foreach (var eventItem in events)
+                {
+                    try
+                    {
+                        eventItem.AdminUser = await this.appUserService.GetUserAsync(eventItem.AdminId.ToString());
+                        if (eventItem.AdminUser == null)
+                        {
+                            this.logger.LogWarning("Admin user not found for event {EventId}, AdminId: {AdminId}", 
+                                eventItem.Id, eventItem.AdminId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogWarning(ex, "Failed to load admin user for event {EventId}, AdminId: {AdminId}", 
+                            eventItem.Id, eventItem.AdminId);
+                        // Continue without admin user data for this event
+                    }
+                }
 
                 // Create paginated result
                 var paginatedResult = new PaginatedResult<Event>(

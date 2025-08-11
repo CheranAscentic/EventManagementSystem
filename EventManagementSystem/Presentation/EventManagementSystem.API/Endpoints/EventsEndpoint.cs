@@ -1,22 +1,23 @@
+using EventManagementSystem.API.Authorizations;
 using EventManagementSystem.API.Interface;
 using EventManagementSystem.API.Services;
-using EventManagementSystem.API.Authorizations;
+using EventManagementSystem.Application.DTO;
 using EventManagementSystem.Application.Usecases.CreateEvent;
-using EventManagementSystem.Application.Usecases.UpdateEvent;
 using EventManagementSystem.Application.Usecases.DeleteEvent;
 using EventManagementSystem.Application.Usecases.GetEvent;
 using EventManagementSystem.Application.Usecases.GetEvents;
+using EventManagementSystem.Application.Usecases.GetEventsExtended;
 using EventManagementSystem.Application.Usecases.GetEventTypes;
 using EventManagementSystem.Application.Usecases.GetOwnerEvents;
+using EventManagementSystem.Application.Usecases.UpdateEvent;
+using EventManagementSystem.Application.Usecases.UploadEventImage;
 using EventManagementSystem.Domain.Models;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using EventManagementSystem.Application.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using EventManagementSystem.Application.Usecases.GetEventsExtended;
 
 namespace EventManagementSystem.API.Endpoints
 {
@@ -84,6 +85,20 @@ namespace EventManagementSystem.API.Endpoints
                 .Produces<Result<object>>(StatusCodes.Status200OK)
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .AllowAnonymous();
+
+            events.MapPost("/event-image", HandleUploadEventImage)
+                .WithName("UploadEventImage")
+                .WithSummary("Upload an image for an event.")
+                .WithDescription("Upload an image file for an event. Accepts JPEG, PNG, GIF, WEBP formats up to 5MB.")
+                .Accepts<IFormFile>("multipart/form-data")
+                .Produces<Result<object>>(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status403Forbidden)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .RequireAuthorization(AuthorizationPolicies.RequireAdminRole)
+                .DisableAntiforgery(); // Required for file uploads
         }
 
         private async Task<IResult> HandleCreateEvent(
@@ -198,6 +213,38 @@ namespace EventManagementSystem.API.Endpoints
                 request.EventType);
 
             logger.LogDebug("GetEventsExtended request data: {Request}", request);
+            return await pipelineService.ExecuteAsync(request, mediator, logger);
+        }
+
+        private async Task<IResult> HandleUploadEventImage(
+            [FromForm] Guid eventId,
+            [FromForm] IFormFile imageFile,
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<EventRegistrationEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            logger.LogInformation(
+                "UploadEventImage request received. EventId: {EventId}, FileName: {FileName}",
+                eventId,
+                imageFile?.FileName);
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                logger.LogWarning("No file provided for event image upload");
+                return Results.BadRequest("No file provided");
+            }
+
+            var request = new UpdateEventImageCommand
+            {
+                EventId = eventId,
+                ImageFile = imageFile,
+            };
+
+            logger.LogDebug(
+                "UploadEventImage request data: EventId: {EventId}, FileSize: {FileSize}",
+                request.EventId,
+                imageFile.Length);
+
             return await pipelineService.ExecuteAsync(request, mediator, logger);
         }
     }
