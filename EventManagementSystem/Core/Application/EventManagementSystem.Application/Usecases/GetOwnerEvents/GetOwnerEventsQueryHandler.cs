@@ -58,6 +58,21 @@ namespace EventManagementSystem.Application.Usecases.GetOwnerEvents
                 return Result<List<Event>>.Success("No events found for this owner.", new List<Event>(), 200);
             }
 
+            // Manually load AdminUser for each event (they should all have the same admin, but load for consistency)
+            foreach (var eventItem in ownerEvents)
+            {
+                try
+                {
+                    // We already have the user loaded, so just assign it
+                    eventItem.AdminUser = user;
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogWarning(ex, "Failed to assign admin user to event {EventId}", eventItem.Id);
+                    // Continue without admin user data for this event
+                }
+            }
+
             this.logger.LogInformation("Successfully fetched {Count} events for owner: {OwnerId}", ownerEvents.Count, request.OwnerId);
             return Result<List<Event>>.Success("Owner events fetched successfully.", ownerEvents, 200);
         }
