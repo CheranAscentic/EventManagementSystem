@@ -17,24 +17,45 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
         private readonly IUnitOfWork unitOfWork;
         private readonly ILogger<CreateEventCommandHandler> logger;
         private readonly IConfiguration configuration;
+        private readonly ICurrentUserService currentUserService;
+        private readonly IFileStorageService fileStorageService;
 
         public CreateEventCommandHandler(
             IRepository<Event> eventRepository,
             IRepository<EventImage> eventImageRepository,
             IUnitOfWork unitOfWork,
             ILogger<CreateEventCommandHandler> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ICurrentUserService currentUserService,
+            IFileStorageService fileStorageService)
         {
             this.repository = eventRepository;
             this.eventImageRepository = eventImageRepository;
             this.unitOfWork = unitOfWork;
             this.logger = logger;
             this.configuration = configuration;
+            this.currentUserService = currentUserService;
+            this.fileStorageService = fileStorageService;
         }
 
         public async Task<Result<Event>> Handle(CreateEventCommand command, CancellationToken cancellationToken = default)
         {
             this.logger.LogInformation("Creating event: {Title}", command.Title);
+
+            // Get current user ID from JWT token
+            var currentUserId = this.currentUserService.GetCurrentUserId();
+            if (currentUserId == null)
+            {
+                this.logger.LogWarning("Event creation failed: User not authenticated");
+                return Result<Event>.Failure("Event creation failed", null, 401, "User not authenticated.");
+            }
+
+            // Verify user is admin
+            if (!this.currentUserService.IsCurrentUserAdmin())
+            {
+                this.logger.LogWarning("Event creation failed: User {UserId} is not an admin", currentUserId);
+                return Result<Event>.Failure("Event creation failed", null, 403, "Only admins can create events.");
+            }
 
             var newEvent = new Event
             {
@@ -47,13 +68,27 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
                 Capacity = command.Capacity,
                 RegistrationCutoffDate = command.RegistrationCutoffDate,
                 IsOpenForRegistration = true,
+                AdminId = currentUserId.Value, // Set the admin ID from current user
             };
 
             await this.repository.AddAsync(newEvent);
             await this.unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Get default image URL from file storage service
+            string defaultImageUrl;
+            try
+            {
+                defaultImageUrl = this.fileStorageService.GetPublicUrl("default.jpeg");
+                this.logger.LogInformation("Retrieved default image URL from storage: {DefaultImageUrl}", defaultImageUrl);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, "Failed to get default image from storage, falling back to configuration");
+                // Fallback to configuration if storage fails
+                defaultImageUrl = this.configuration["Default:EventImageURL"] ?? string.Empty;
+            }
+
             // Create default EventImage
-            var defaultImageUrl = this.configuration["Default__EventImageURL"] ?? string.Empty;
             var eventImage = new EventImage
             {
                 Id = Guid.NewGuid(),
@@ -67,7 +102,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             // Get event with image
             var eventWithImage = await this.repository.GetWithIncludesAsync(newEvent.Id, "Image");
 
-            this.logger.LogInformation("Event created successfully: {EventId}", newEvent.Id);
+            this.logger.LogInformation("Event created successfully: {EventId} by admin {AdminId}", newEvent.Id, currentUserId);
             return Result<Event>.Success("Event created successfully.", eventWithImage, 201);
         }
     }

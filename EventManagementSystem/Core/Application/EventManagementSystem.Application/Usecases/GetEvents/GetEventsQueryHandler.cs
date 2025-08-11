@@ -24,7 +24,7 @@ namespace EventManagementSystem.Application.Usecases.GetEvents
         {
             this.logger.LogInformation("Fetching all events");
 
-            var events = await this.repository.GetAllAsync();
+            var events = await this.repository.GetAllWithIncludesAsync("Image");
 
             if (events == null || events.Count == 0)
             {

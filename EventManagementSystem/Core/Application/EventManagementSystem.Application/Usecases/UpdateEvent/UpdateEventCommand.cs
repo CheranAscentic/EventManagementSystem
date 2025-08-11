@@ -41,6 +41,5 @@ namespace EventManagementSystem.Application.Usecases.UpdateEvent
         public int? Capacity { get; }
 
         public DateTime? RegistrationCutoffDate { get; }
-
     }
 }

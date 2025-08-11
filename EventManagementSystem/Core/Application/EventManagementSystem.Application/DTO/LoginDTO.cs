@@ -1,21 +1,16 @@
-﻿using EventManagementSystem.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventManagementSystem.Application.DTO
+﻿namespace EventManagementSystem.Application.DTO
 {
-    public record LoginDTO
+    using EventManagementSystem.Domain.Interfaces;
+
+    public record LoginDTO : IsDto
     {
         public Guid Id { get; set; }
 
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
 
         public DateTimeOffset TokenExpiration { get; set; }
 
@@ -25,5 +20,6 @@ namespace EventManagementSystem.Application.DTO
 
         public string? PhoneNumber { get; set; }
 
+        public string userRole { get; set; } = string.Empty;
     }
 }

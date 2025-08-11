@@ -21,5 +21,48 @@ namespace EventManagementSystem.Application.Interfaces
 
         Task<bool> CheckEmailExists(string email);
 
+        /// <summary>
+        /// Gets the primary role of a user.
+        /// </summary>
+        /// <param name="user">The user to get the role for</param>
+        /// <returns>The user's primary role or empty string if no roles found</returns>
+        Task<string> GetUserRoleAsync(AppUser user);
+
+        /// <summary>
+        /// Gets all roles of a user.
+        /// </summary>
+        /// <param name="user">The user to get roles for</param>
+        /// <returns>List of user roles</returns>
+        Task<IList<string>> GetUserRolesAsync(AppUser user);
+    }
+
+    /// <summary>
+    /// Service for accessing current user context from HTTP requests
+    /// </summary>
+    public interface ICurrentUserService
+    {
+        /// <summary>
+        /// Gets the current user's ID from the JWT token
+        /// </summary>
+        /// <returns>Current user ID or null if not authenticated</returns>
+        Guid? GetCurrentUserId();
+
+        /// <summary>
+        /// Gets the current user's email from the JWT token
+        /// </summary>
+        /// <returns>Current user email or null if not authenticated</returns>
+        string? GetCurrentUserEmail();
+
+        /// <summary>
+        /// Checks if the current user is an admin
+        /// </summary>
+        /// <returns>True if current user is admin, false otherwise</returns>
+        bool IsCurrentUserAdmin();
+
+        /// <summary>
+        /// Checks if the current user is authenticated
+        /// </summary>
+        /// <returns>True if authenticated, false otherwise</returns>
+        bool IsAuthenticated();
     }
 }

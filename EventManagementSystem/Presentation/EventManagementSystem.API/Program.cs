@@ -1,9 +1,11 @@
 using DotNetEnv;
 using EventManagementSystem.API.Extensions;
 using EventManagementSystem.API.Middleware;
+using EventManagementSystem.API.Services;
+using EventManagementSystem.API.Authorizations;
 using EventManagementSystem.Application.Behavior;
 using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Application.Usecases.UserLogin;
+using EventManagementSystem.Application.Usecases.Login;
 using EventManagementSystem.Domain.Models;
 using EventManagementSystem.Identity.Context;
 using EventManagementSystem.Identity.Services;
@@ -14,40 +16,153 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 using Serilog;
+using EventManagementSystem.Storage.Services;
+using Supabase;
+using Npgsql.EntityFrameworkCore.PostgreSQL; // Add this using statement at the top
 
 // Load environment variables from .env file
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add environment variables into the Configuration
+builder.Configuration.AddEnvironmentVariables();
+
 // Set up Serilog logging
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Information() // Set global minimum level
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
+    .WriteTo.Console()
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 builder.Services.AddOpenApi();
 
-// Set up Swagger/OpenAPI
+// Set up Swagger/OpenAPI with JWT authentication
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Library Management System API",
+        Title = "Event Management System API",
         Version = "v1",
-        Description = "A .NET 9 Minimal API for Library Management System",
+        Description = "A .NET 9 Minimal API for Event Management System",
+    });
+
+    // Add JWT authentication to Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer",
+                },
+            },
+            Array.Empty<string>()
+        },
     });
 });
 
-// Set up database context for Identity
+// Configure Supabase Client as Singleton
+builder.Services.AddSingleton<Client>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var logger = serviceProvider.GetRequiredService<ILogger<Client>>();
+
+    // Get configuration values
+    var supabaseUrl = configuration["Supabase:Url"] ?? 
+                     throw new InvalidOperationException("Supabase:Url configuration is missing");
+    var supabaseServiceRoleKey = configuration["Supabase:ServiceRoleKey"] ?? 
+                                throw new InvalidOperationException("Supabase:ServiceRoleKey configuration is missing");
+
+    try
+    {
+        var client = new Client(
+            supabaseUrl,
+            supabaseServiceRoleKey, // Use service role key for server-side operations
+            new SupabaseOptions
+            {
+                AutoConnectRealtime = false, // We don't need realtime for file storage
+            }
+        );
+
+        logger.LogInformation("Supabase client configured successfully for URL: {SupabaseUrl}", supabaseUrl);
+        return client;
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Failed to configure Supabase client");
+        throw;
+    }
+});
+
+/*// Set up database context for Identity
 builder.Services.AddDbContext<IdentityDbContext>(options =>
 {
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("EventManagementSystem.Identity")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// Set up database context for ApplicationDbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});*/
+
+// Set up database context for Identity using Supabase-PGSQL
+builder.Services.AddDbContext<IdentityDbContext>(options =>
+{
+    options.UseNpgsql(  // Changed from UseSqlServer to UseNpgsql
+        builder.Configuration["Supabase:PGSQLDefaultString"], // Changed from GetConnectionString
+        b => b.MigrationsAssembly("EventManagementSystem.Identity")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// Set up database context for ApplicationDbContext using Supabase-PGSQL
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(  // Changed from UseSqlServer to UseNpgsql
+        builder.Configuration["Supabase:PGSQLDefaultString"], // Changed from GetConnectionString
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
     );
     if (builder.Environment.IsDevelopment())
     {
@@ -67,34 +182,77 @@ builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<IdentityDbContext>();
 
-// Set up database context for ApplicationDbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// Add JWT Authentication
+builder.Services.AddAuthentication(options =>
 {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
-    );
-    if (builder.Environment.IsDevelopment())
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        ClockSkew = TimeSpan.Zero
+    };
 });
+
+// Add Authorization with custom policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy that requires the user to be authenticated (any role)
+    options.AddPolicy(AuthorizationPolicies.RequireAuthenticatedUser, policy =>
+        policy.RequireAuthenticatedUser());
+
+    // Policy that requires the user to have the Admin role
+    options.AddPolicy(AuthorizationPolicies.RequireAdminRole, policy =>
+        policy.RequireRole("Admin"));
+
+    // Policy that requires the user to have either User or Admin role
+    options.AddPolicy(AuthorizationPolicies.RequireUserOrAdminRole, policy =>
+        policy.RequireRole("User", "Admin"));
+
+    // Policy for resource owner or admin access
+    options.AddPolicy(AuthorizationPolicies.RequireResourceOwnerOrAdmin, policy =>
+        policy.Requirements.Add(new ResourceOwnerOrAdminRequirement()));
+
+    // Policy for debugging JWT tokens (Development only)
+    options.AddPolicy(AuthorizationPolicies.DebugToken, policy =>
+        policy.Requirements.Add(new DebugTokenRequirement()));
+});
+
+// Register authorization handlers
+builder.Services.AddScoped<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, DebugTokenHandler>();
+
+
 
 // Set up MediatR and validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(UserLoginCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
 });
+
+// Add HttpContextAccessor for CurrentUserService
+builder.Services.AddHttpContextAccessor();
 
 // Register application services
 builder.Services.AddScoped<IAppUserService, AppUserService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<MediatorPipelineService>();
 
 // Register FluentValidation validators
-builder.Services.AddValidatorsFromAssemblyContaining<UserLoginCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginCommandValidator>();
 
 // Register generic repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -102,7 +260,10 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 // Register repositories for Event, EventRegistration, EventImage
 builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
 builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
+builder.Services.AddScoped<IExtendedEventsRepository, ExtendedEventsRepository>();
 builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
+// Add this if not already present
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // Set up CORS
 builder.Services.AddCors(options =>
@@ -121,24 +282,38 @@ var app = builder.Build();
 // Enable CORS
 app.UseCors("DefaultCorsPolicy");
 
+//foreach (var kvp in app.Configuration.AsEnumerable())
+//{
+//    Console.WriteLine($"{kvp.Key} = {kvp.Value}");
+//}
+
 if (app.Environment.IsDevelopment())
 {
+    // Only load .env in development
+    Env.Load();
+    
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "LMS API v1");
-        options.RoutePrefix = string.Empty; // Swagger UI at root
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Event Management System API v1");
+        options.RoutePrefix = string.Empty;
     });
     app.MapOpenApi();
+}
+else
+{
+    // Production should use environment variables directly
+    app.UseHttpsRedirection();
 }
 
 // Use global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();
 
+// Add authentication and authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Register all endpoint groups
 app.RegisterAllEndpointGroups();
-
-// Enable HTTPS redirection
-app.UseHttpsRedirection();
 
 app.Run();

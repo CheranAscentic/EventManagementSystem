@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -26,6 +26,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Identity", "EventManagementSystem\Infrastructure\Identity\EventManagementSystem.Identity\EventManagementSystem.Identity.csproj", "{EB5DD210-5F28-49C1-B37E-789986717EA6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Persistence", "EventManagementSystem\Infrastructure\Persistence\EventManagementSystem.Persistence\EventManagementSystem.Persistence.csproj", "{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Storage", "Storage", "{4677A863-D44C-41B0-934E-1102E7F02025}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagementSystem.Storage", "EventManagementSystem\Infrastructure\Storage\EventManagementSystem.Storage\EventManagementSystem.Storage.csproj", "{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,10 @@ Global
 		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +75,8 @@ Global
 		{A6F3250B-A358-4B3A-AAAB-A63847D39F8B} = {92ED3589-3381-4758-8F50-29F0B6D42617}
 		{EB5DD210-5F28-49C1-B37E-789986717EA6} = {136D8FB0-835E-4314-90C9-4602FF1BCC9C}
 		{A028EA5B-9882-4C8A-B6DF-0BD2728834E7} = {6ABE8FC5-112A-48C7-881F-A251B54DDAA5}
+		{4677A863-D44C-41B0-934E-1102E7F02025} = {E27D12D7-11F2-459D-A72C-5415B907F2AB}
+		{1FE3D99C-394A-4A0E-AF1A-6A51D39DAB03} = {4677A863-D44C-41B0-934E-1102E7F02025}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A0C83417-96C1-4D0A-A1BD-E09AA2881AEB}
