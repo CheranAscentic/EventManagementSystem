@@ -23,6 +23,8 @@ using System.Text;
 using System.Security.Claims;
 using Serilog;
 using EventManagementSystem.Storage.Services;
+using Supabase;
+using Npgsql.EntityFrameworkCore.PostgreSQL; // Add this using statement at the top
 
 // Load environment variables from .env file
 Env.Load();
@@ -80,12 +82,87 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Set up database context for Identity
+// Configure Supabase Client as Singleton
+builder.Services.AddSingleton<Client>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var logger = serviceProvider.GetRequiredService<ILogger<Client>>();
+
+    // Get configuration values
+    var supabaseUrl = configuration["Supabase:Url"] ?? 
+                     throw new InvalidOperationException("Supabase:Url configuration is missing");
+    var supabaseServiceRoleKey = configuration["Supabase:ServiceRoleKey"] ?? 
+                                throw new InvalidOperationException("Supabase:ServiceRoleKey configuration is missing");
+
+    try
+    {
+        var client = new Client(
+            supabaseUrl,
+            supabaseServiceRoleKey, // Use service role key for server-side operations
+            new SupabaseOptions
+            {
+                AutoConnectRealtime = false, // We don't need realtime for file storage
+            }
+        );
+
+        logger.LogInformation("Supabase client configured successfully for URL: {SupabaseUrl}", supabaseUrl);
+        return client;
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Failed to configure Supabase client");
+        throw;
+    }
+});
+
+/*// Set up database context for Identity
 builder.Services.AddDbContext<IdentityDbContext>(options =>
 {
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("EventManagementSystem.Identity")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// Set up database context for ApplicationDbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});*/
+
+// Set up database context for Identity using Supabase-PGSQL
+builder.Services.AddDbContext<IdentityDbContext>(options =>
+{
+    options.UseNpgsql(  // Changed from UseSqlServer to UseNpgsql
+        builder.Configuration["Supabase:PGSQLDefaultString"], // Changed from GetConnectionString
+        b => b.MigrationsAssembly("EventManagementSystem.Identity")
+    );
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// Set up database context for ApplicationDbContext using Supabase-PGSQL
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(  // Changed from UseSqlServer to UseNpgsql
+        builder.Configuration["Supabase:PGSQLDefaultString"], // Changed from GetConnectionString
+        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
     );
     if (builder.Environment.IsDevelopment())
     {
@@ -141,7 +218,7 @@ builder.Services.AddAuthorization(options =>
     // Policy that requires the user to have either User or Admin role
     options.AddPolicy(AuthorizationPolicies.RequireUserOrAdminRole, policy =>
         policy.RequireRole("User", "Admin"));
-        
+
     // Policy for resource owner or admin access
     options.AddPolicy(AuthorizationPolicies.RequireResourceOwnerOrAdmin, policy =>
         policy.Requirements.Add(new ResourceOwnerOrAdminRequirement()));
@@ -155,19 +232,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, DebugTokenHandler>();
 
-// Set up database context for ApplicationDbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("EventManagementSystem.Persistence")
-    );
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
-});
+
 
 // Set up MediatR and validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
