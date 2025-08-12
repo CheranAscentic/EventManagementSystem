@@ -1,0 +1,6 @@
+{
+  "deploy": {
+    "startCommand": "dotnet EventManagementSystem.API.dll",
+    "buildCommand": "dotnet publish EventManagementSystem/Presentation/EventManagementSystem.API/EventManagementSystem.API.csproj -c Release -o out"
+  }
+}
