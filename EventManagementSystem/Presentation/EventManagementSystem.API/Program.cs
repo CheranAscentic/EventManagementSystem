@@ -303,7 +303,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     // Production should use environment variables directly
-    app.UseHttpsRedirection();
+    // app.UseHttpsRedirection();
 }
 
 // Use global exception handler
