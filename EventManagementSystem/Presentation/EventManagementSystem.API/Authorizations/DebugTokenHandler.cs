@@ -57,7 +57,7 @@ namespace EventManagementSystem.API.Authorizations
                 ["Sub"] = user.FindFirst("sub")?.Value,
                 ["Exp"] = user.FindFirst("exp")?.Value,
                 ["Iss"] = user.FindFirst("iss")?.Value,
-                ["Aud"] = user.FindFirst("aud")?.Value
+                ["Aud"] = user.FindFirst("aud")?.Value,
             };
 
             this.logger.LogInformation("=== Key Claims Summary ===");
@@ -70,7 +70,7 @@ namespace EventManagementSystem.API.Authorizations
             var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
             this.logger.LogInformation("=== Roles Analysis ===");
             this.logger.LogInformation("Total Roles Count: {RolesCount}", roles.Count);
-            
+
             if (roles.Any())
             {
                 foreach (var role in roles)
@@ -91,7 +91,7 @@ namespace EventManagementSystem.API.Authorizations
             // Log all identities
             this.logger.LogInformation("=== Identities Analysis ===");
             this.logger.LogInformation("Total Identities Count: {IdentitiesCount}", user.Identities.Count());
-            
+
             foreach (var identity in user.Identities)
             {
                 this.logger.LogInformation("Identity: Name='{IdentityName}', AuthType='{AuthType}', IsAuth={IsAuth}, Claims={ClaimsCount}",
@@ -107,7 +107,7 @@ namespace EventManagementSystem.API.Authorizations
             {
                 var expirationTime = DateTimeOffset.FromUnixTimeSeconds(exp);
                 var timeUntilExpiry = expirationTime - DateTimeOffset.UtcNow;
-                
+
                 this.logger.LogInformation("=== Token Expiration Info ===");
                 this.logger.LogInformation("Token Expires At: {ExpirationTime:yyyy-MM-dd HH:mm:ss} UTC", expirationTime);
                 this.logger.LogInformation("Time Until Expiry: {TimeUntilExpiry}", timeUntilExpiry);
@@ -119,7 +119,7 @@ namespace EventManagementSystem.API.Authorizations
             // Allow access for any authenticated user (this is a debug endpoint)
             this.logger.LogInformation("DebugTokenHandler: User is authenticated - access granted for debugging");
             context.Succeed(requirement);
-            
+
             return Task.CompletedTask;
         }
     }
