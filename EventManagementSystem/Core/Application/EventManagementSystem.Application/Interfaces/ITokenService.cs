@@ -4,7 +4,13 @@
 
     public interface ITokenService
     {
-        string CreateToken(AppUser user);
-        DateTime GetTokenExpiration();
+        (string Token, DateTime Expiration) CreateToken(AppUser user); // Updated to return token and expiration
+
+        DateTime GetTokenExpiration(TimeSpan lifeTime);
+
+        RefreshToken CreateRefreshToken(AppUser user);
+
+        TimeSpan AuthTokenLifeSpan { get; }
+        TimeSpan RefreshTokenLifeSpan { get; }
     }
 }

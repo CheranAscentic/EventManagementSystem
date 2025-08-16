@@ -1,34 +1,40 @@
-using EventManagementSystem.Application.DTO;
-using EventManagementSystem.Application.Interfaces;
-using EventManagementSystem.Domain.Models;
-using MediatR;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace EventManagementSystem.Application.Usecases.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginDTO>>
+    using System.Threading;
+    using System.Threading.Tasks;
+    using EventManagementSystem.Application.DTO;
+    using EventManagementSystem.Application.Interfaces;
+    using EventManagementSystem.Domain.Models;
+    using MediatR;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.Extensions.Logging;
+
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<CredentialsDTO>>
     {
         private readonly IAppUserService appUserService;
         private readonly ITokenService tokenService;
         private readonly UserManager<AppUser> userManager;
         private readonly ILogger<LoginCommandHandler> logger;
+        private readonly IRefreshTokenRepository refreshTokenRepository; // Changed interface
+        private readonly IUnitOfWork unitOfWork;
 
         public LoginCommandHandler(
             IAppUserService appUserService,
             ITokenService tokenService,
             UserManager<AppUser> userManager,
-            ILogger<LoginCommandHandler> logger)
+            ILogger<LoginCommandHandler> logger,
+            IRefreshTokenRepository refreshTokenRepository, // Changed interface
+            IUnitOfWork unitOfWork)
         {
             this.appUserService = appUserService;
             this.tokenService = tokenService;
             this.userManager = userManager;
             this.logger = logger;
+            this.refreshTokenRepository = refreshTokenRepository;
+            this.unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<LoginDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
+        public async Task<Result<CredentialsDTO>> Handle(LoginCommand command, CancellationToken cancellationToken = default)
         {
             this.logger.LogInformation("Attempting login for Email: {Email}", command.Email);
             this.logger.LogDebug("Login command received for email: {Email}", command.Email);
@@ -38,7 +44,7 @@ namespace EventManagementSystem.Application.Usecases.Login
             if (user == null)
             {
                 this.logger.LogWarning("Login failed for Email: {Email} - Invalid credentials", command.Email);
-                return Result<LoginDTO>.Failure("Login failed", null, 401, "Invalid email or password");
+                return Result<CredentialsDTO>.Failure("Login failed", null, 401, "Invalid email or password");
             }
 
             this.logger.LogDebug("User authenticated successfully for Email: {Email}", command.Email);
@@ -64,27 +70,26 @@ namespace EventManagementSystem.Application.Usecases.Login
             }
 
             // Generate token and expiration
-            var token = this.tokenService.CreateToken(user);
-            var tokenExpiration = this.tokenService.GetTokenExpiration();
+            var (authToken, authTokenExp) = this.tokenService.CreateToken(user);
 
             this.logger.LogDebug("JWT token generated successfully for Email: {Email}", command.Email);
 
-            // Create response DTO
-            var response = new LoginDTO
+            var refreshToken = this.tokenService.CreateRefreshToken(user);
+
+            await this.refreshTokenRepository.AddAsync(refreshToken);
+
+            var response = new CredentialsDTO
             {
-                Id = user.Id,
-                Email = user.Email!,
-                UserName = user.UserName!,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber,
-                userRole = userRole,
-                Token = token,
-                TokenExpiration = tokenExpiration,
+                AuthToken = authToken,
+                RefreshToken = refreshToken.Token,
+                AuthTokenExp = authTokenExp.ToUniversalTime().ToString("o"),
+                RefreshTokenExp = refreshToken.Expires.ToUniversalTime().ToString("o"),
             };
 
+            await this.unitOfWork.SaveChangesAsync(cancellationToken);
+
             this.logger.LogInformation("Login completed successfully for Email: {Email}", command.Email);
-            return Result<LoginDTO>.Success("Login successful", response, 200);
+            return Result<CredentialsDTO>.Success("Login successful", response, 200);
         }
     }
 }

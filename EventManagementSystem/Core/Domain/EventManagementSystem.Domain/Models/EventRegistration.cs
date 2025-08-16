@@ -29,12 +29,6 @@ namespace EventManagementSystem.Domain.Models
         [JsonIgnore]
         public virtual Event Event { get; set; } = null!;
 
-        /// <summary>
-        /// Navigation property for the user associated with this registration.
-        /// Must be loaded using GetWithIncludesAsync with "User".
-        /// </summary>
-        public virtual AppUser User { get; set; } = null!;
-
         public object ToDto()
         {
             return new EventRegistrationDTO

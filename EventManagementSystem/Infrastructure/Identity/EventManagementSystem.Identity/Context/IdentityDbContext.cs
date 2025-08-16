@@ -5,24 +5,13 @@ namespace EventManagementSystem.Identity.Context
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
 
-    /// <summary>
-    /// Represents the database context for identity management, including users and roles.
-    /// </summary>
     public class IdentityDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext"/> class.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options)
         {
         }
 
-        /// <summary>
-        /// Configures the schema needed for the identity framework.
-        /// </summary>
-        /// <param name="builder">The builder being used to construct the model for this context.</param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

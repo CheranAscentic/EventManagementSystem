@@ -5,6 +5,7 @@ namespace EventManagementSystem.API.Endpoints
     using EventManagementSystem.API.Services;
     using EventManagementSystem.Application.Usecases.AdminRegistration;
     using EventManagementSystem.Application.Usecases.Login;
+    using EventManagementSystem.Application.Usecases.RefreshToken;
     using EventManagementSystem.Application.Usecases.UserRegistration;
     using MediatR;
     using Microsoft.AspNetCore.Http;
@@ -40,6 +41,13 @@ namespace EventManagementSystem.API.Endpoints
             auth.MapPost("/register/admin", HandleAdminRegister)
                 .WithName("RegisterAdmin")
                 .WithSummary("Register a new admin user with email, password, first name, last name, and username.")
+                .Produces(StatusCodes.Status201Created)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .AllowAnonymous();
+
+            auth.MapPost("/refresh", HandleTokenRefresh)
+                .WithName("RefreshToken")
+                .WithSummary("Given a refresh token, will produce a new Auth Token, RefreshToken")
                 .Produces(StatusCodes.Status201Created)
                 .ProducesProblem(StatusCodes.Status400BadRequest)
                 .AllowAnonymous();
@@ -84,6 +92,17 @@ namespace EventManagementSystem.API.Endpoints
                 request.LastName,
                 request.UserName);
             logger.LogDebug("Admin registration request data: {Request}", request);
+            return await pipelineService.ExecuteAsync(request, mediator, logger);
+        }
+
+        private async Task<IResult> HandleTokenRefresh(
+            RefreshTokenCommand request,
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<AuthenticationEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            logger.LogInformation("Refresh token request received. Token: {Token}", request.RefreshToken);
+            logger.LogDebug("Refresh token request data: {Request}", request);
             return await pipelineService.ExecuteAsync(request, mediator, logger);
         }
     }

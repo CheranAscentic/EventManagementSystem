@@ -129,6 +129,35 @@ namespace EventManagementSystem.Persistence.Migrations
                     b.ToTable("EventRegistrations");
                 });
 
+            modelBuilder.Entity("EventManagementSystem.Domain.Models.RefreshToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("AppUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("AppUserId")
+                        .HasDatabaseName("IX_RefreshTokens_AppUserId");
+
+                    b.HasIndex("AppUserId", "Revoked", "Expires")
+                        .HasDatabaseName("IX_RefreshTokens_Active");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("EventManagementSystem.Domain.Models.EventImage", b =>
                 {
                     b.HasOne("EventManagementSystem.Domain.Models.Event", "Event")

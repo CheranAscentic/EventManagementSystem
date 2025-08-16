@@ -60,24 +60,24 @@ namespace EventManagementSystem.Application.Usecases.GetEventsExtended
                     "Registrations"); // Include navigation properties
 
                 // Manually load AdminUser for each event since it's in a different DbContext
-                foreach (var eventItem in events)
-                {
-                    try
-                    {
-                        eventItem.AdminUser = await this.appUserService.GetUserAsync(eventItem.AdminId.ToString());
-                        if (eventItem.AdminUser == null)
-                        {
-                            this.logger.LogWarning("Admin user not found for event {EventId}, AdminId: {AdminId}", 
-                                eventItem.Id, eventItem.AdminId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogWarning(ex, "Failed to load admin user for event {EventId}, AdminId: {AdminId}", 
-                            eventItem.Id, eventItem.AdminId);
-                        // Continue without admin user data for this event
-                    }
-                }
+                //foreach (var eventItem in events)
+                //{
+                //    try
+                //    {
+                //        eventItem.AdminUser = await this.appUserService.GetUserAsync(eventItem.AdminId.ToString());
+                //        if (eventItem.AdminUser == null)
+                //        {
+                //            this.logger.LogWarning("Admin user not found for event {EventId}, AdminId: {AdminId}", 
+                //                eventItem.Id, eventItem.AdminId);
+                //        }
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        this.logger.LogWarning(ex, "Failed to load admin user for event {EventId}, AdminId: {AdminId}", 
+                //            eventItem.Id, eventItem.AdminId);
+                //        // Continue without admin user data for this event
+                //    }
+                //}
 
                 // Create paginated result
                 var paginatedResult = new PaginatedResult<Event>(
