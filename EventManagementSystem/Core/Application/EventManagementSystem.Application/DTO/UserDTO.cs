@@ -1,6 +1,7 @@
 namespace EventManagementSystem.Application.DTO
 {
     using EventManagementSystem.Domain.Interfaces;
+
     public class UserDTO : IsDto
     {
         public Guid UserId { get; set; }
@@ -16,5 +17,7 @@ namespace EventManagementSystem.Application.DTO
         public string userRole { get; set; } = string.Empty;
 
         public string PhoneNumber { get; set; } = string.Empty;
+
     }
+
 }

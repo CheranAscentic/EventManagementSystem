@@ -1,11 +1,15 @@
 namespace EventManagementSystem.API.Endpoints
 {
+    using System;
     using System.Threading.Tasks;
     using EventManagementSystem.API.Interface;
     using EventManagementSystem.API.Services;
     using EventManagementSystem.Application.Usecases.AdminRegistration;
     using EventManagementSystem.Application.Usecases.Login;
+    using EventManagementSystem.Application.Usecases.Logout;
+    using EventManagementSystem.Application.Usecases.RefreshToken;
     using EventManagementSystem.Application.Usecases.UserRegistration;
+    using EventManagementSystem.Application.DTO;
     using MediatR;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -43,6 +47,20 @@ namespace EventManagementSystem.API.Endpoints
                 .Produces(StatusCodes.Status201Created)
                 .ProducesProblem(StatusCodes.Status400BadRequest)
                 .AllowAnonymous();
+
+            auth.MapPost("/refresh", HandleTokenRefresh)
+                .WithName("RefreshToken")
+                .WithSummary("Given a refresh token, will produce a new Auth Token, RefreshToken")
+                .Produces(StatusCodes.Status201Created)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .AllowAnonymous();
+
+            auth.MapPost("/logout", HandleLogout)
+                .WithName("Logout")
+                .WithSummary("Logs out the authenticated user and deletes all their refresh tokens.")
+                .Produces(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .RequireAuthorization();
         }
 
         private async Task<IResult> HandleLogin(
@@ -85,6 +103,39 @@ namespace EventManagementSystem.API.Endpoints
                 request.UserName);
             logger.LogDebug("Admin registration request data: {Request}", request);
             return await pipelineService.ExecuteAsync(request, mediator, logger);
+        }
+
+        private async Task<IResult> HandleTokenRefresh(
+            RefreshTokenCommand request,
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<AuthenticationEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            logger.LogInformation("Refresh token request received. Token: {Token}", request.RefreshToken);
+            logger.LogDebug("Refresh token request data: {Request}", request);
+            return await pipelineService.ExecuteAsync(request, mediator, logger);
+        }
+
+        private async Task<IResult> HandleLogout(
+            HttpContext httpContext,
+            [FromServices] IMediator mediator,
+            [FromServices] ILogger<AuthenticationEndpoint> logger,
+            [FromServices] MediatorPipelineService pipelineService)
+        {
+            // Get the authenticated user's Guid from claims
+            var userIdClaim = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                logger.LogWarning("Logout request failed: Authenticated user Guid not found in claims.");
+                var failureResult = Result<object>.Failure("Logout failed: User not authenticated.", null, 401, "User not authenticated");
+                return failureResult.ToApiResult();
+            }
+
+            logger.LogInformation("Logout request received. UserId: {UserId}", userId);
+            logger.LogDebug("Logout request for UserId: {UserId}", userId);
+
+            var command = new LogoutCommand { UserId = userId };
+            return await pipelineService.ExecuteAsync(command, mediator, logger);
         }
     }
 }
