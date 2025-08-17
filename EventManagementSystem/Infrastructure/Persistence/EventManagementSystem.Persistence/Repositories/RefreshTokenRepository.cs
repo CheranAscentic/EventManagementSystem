@@ -98,5 +98,15 @@ namespace EventManagementSystem.Persistence.Repositories
             this.dbSet.RemoveRange(expiredTokens);
             return expiredTokens.Count;
         }
+
+        public async Task<int> RemoveAllUserTokensAsync(Guid userId)
+        {
+            var userTokens = await this.dbSet
+                .Where(rt => rt.AppUserId == userId)
+                .ToListAsync();
+
+            this.dbSet.RemoveRange(userTokens);
+            return userTokens.Count;
+        }
     }
 }

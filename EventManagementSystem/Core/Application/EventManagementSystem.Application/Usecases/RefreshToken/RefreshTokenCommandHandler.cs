@@ -1,14 +1,13 @@
 ﻿namespace EventManagementSystem.Application.Usecases.RefreshToken
 {
+    using System.Threading;
+    using System.Threading.Tasks;
     using EventManagementSystem.Application.DTO;
     using EventManagementSystem.Application.Interfaces;
     using EventManagementSystem.Domain.Models;
     using MediatR;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.Extensions.Logging;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<CredentialsDTO>>
     {
@@ -63,6 +62,15 @@
             {
                 this.logger.LogWarning("User not found for Refresh Token");
                 return Result<CredentialsDTO>.Failure("Refresh token Failed", null, 404, "User not found");
+            }
+
+            int nRevokedTokens = await this.refreshTokenRepository.RevokeAllUserTokensAsync(user.Id);
+
+            this.logger.LogInformation("Past refreshTokens for UserId: {UserId}, have been revoked", user.Id);
+
+            if (nRevokedTokens > 1)
+            {
+                this.logger.LogWarning("UserId: {UserId} had {n} tokens active.", user.Id, nRevokedTokens);
             }
 
             var (authToken, authTokenExp) = this.tokenService.CreateToken(user);

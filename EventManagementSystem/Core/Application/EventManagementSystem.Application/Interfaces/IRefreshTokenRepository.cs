@@ -21,5 +21,7 @@ namespace EventManagementSystem.Application.Interfaces
         Task<bool> RemoveTokenAsync(string token);
 
         Task<int> RemoveExpiredTokensAsync();
+
+        Task<int> RemoveAllUserTokensAsync(Guid userId);
     }
 }
