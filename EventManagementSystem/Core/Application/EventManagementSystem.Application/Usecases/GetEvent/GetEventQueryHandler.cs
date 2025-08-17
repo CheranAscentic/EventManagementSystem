@@ -38,21 +38,21 @@ namespace EventManagementSystem.Application.Usecases.GetEvent
             eventEntity = await this.repository.GetWithIncludesAsync(request.EventId, "Image", "Registrations");
 
             // Manually load the AdminUser since it's in a different DbContext
-            try
-            {
-                eventEntity!.AdminUser = await this.appUserService.GetUserAsync(eventEntity.AdminId.ToString());
-                if (eventEntity.AdminUser == null)
-                {
-                    this.logger.LogWarning("Admin user not found for event {EventId}, AdminId: {AdminId}", 
-                        request.EventId, eventEntity.AdminId);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                this.logger.LogWarning(ex, "Failed to load admin user for event {EventId}, AdminId: {AdminId}", 
-                    request.EventId, eventEntity.AdminId);
-                // Continue without admin user data
-            }
+            //try
+            //{
+            //    eventEntity!.AdminUser = await this.appUserService.GetUserAsync(eventEntity.AdminId.ToString());
+            //    if (eventEntity.AdminUser == null)
+            //    {
+            //        this.logger.LogWarning("Admin user not found for event {EventId}, AdminId: {AdminId}", 
+            //            request.EventId, eventEntity.AdminId);
+            //    }
+            //}
+            //catch (System.Exception ex)
+            //{
+            //    this.logger.LogWarning(ex, "Failed to load admin user for event {EventId}, AdminId: {AdminId}", 
+            //        request.EventId, eventEntity.AdminId);
+            //    // Continue without admin user data
+            //}
 
             this.logger.LogInformation("Event found: {EventId}", eventEntity.Id);
             return Result<Event>.Success("Event fetched successfully.", eventEntity, 200);

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventManagementSystem.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class innitMigration : Migration
+    public partial class initMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,6 +29,21 @@ namespace EventManagementSystem.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    AppUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Expires = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Revoked = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Token);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,6 +99,16 @@ namespace EventManagementSystem.Persistence.Migrations
                 name: "IX_EventRegistrations_EventId",
                 table: "EventRegistrations",
                 column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_Active",
+                table: "RefreshTokens",
+                columns: new[] { "AppUserId", "Revoked", "Expires" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_AppUserId",
+                table: "RefreshTokens",
+                column: "AppUserId");
         }
 
         /// <inheritdoc />
@@ -94,6 +119,9 @@ namespace EventManagementSystem.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "EventRegistrations");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Events");

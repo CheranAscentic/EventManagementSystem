@@ -10,6 +10,8 @@ namespace EventManagementSystem.Domain.Models
 
         public Guid AdminId { get; set; }
 
+        public string AdminName { get; set; }
+
         public string Title { get; set; } = null!;
 
         public string Description { get; set; } = null!;
@@ -38,13 +40,6 @@ namespace EventManagementSystem.Domain.Models
         /// </summary>
         public virtual EventImage? Image { get; set; }
 
-        /// <summary>
-        /// Navigation property for the admin user who owns this event.
-        /// Must be loaded using GetWithIncludesAsync with "AdminUser".
-        /// Note: This requires cross-context loading since AppUser is in IdentityDbContext.
-        /// </summary>
-        public virtual AppUser? AdminUser { get; set; }
-
         public int NoOfRegistrations { get => this.Registrations?.Count ?? 0; }
 
         public object ToDto()
@@ -64,7 +59,7 @@ namespace EventManagementSystem.Domain.Models
                 NoOfRegistrations = this.NoOfRegistrations,
                 ImageUrl = this.Image?.ImageUrl ?? string.Empty,
                 RegisteredIds = this.Registrations?.Select(r => r.UserId).ToList(),
-                Owner = this.AdminUser?.UserName ?? string.Empty,
+                Owner = this.AdminName,
             };
         }
 

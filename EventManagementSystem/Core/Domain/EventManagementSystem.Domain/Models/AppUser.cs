@@ -4,21 +4,6 @@
     using EventManagementSystem.Domain.Interfaces;
     using Microsoft.AspNetCore.Identity;
 
-    /// <summary>
-    /// Represents an application user with additional properties beyond the standard Identity user.
-    /// 
-    /// Example usage of userRole functionality:
-    /// 
-    /// 1. Using ToDto() with role:
-    ///    var userRole = await appUserService.GetUserRoleAsync(user);
-    ///    var userDto = user.ToDto(userRole);
-    /// 
-    /// 2. Using default ToDto():
-    ///    var userDto = user.ToDto(); // userRole will be empty string
-    /// 
-    /// 3. Getting all user roles:
-    ///    var allRoles = await appUserService.GetUserRolesAsync(user);
-    /// </summary>
     public class AppUser : IdentityUser<Guid>, HasDto
     {
         public string? FirstName { get; set; }

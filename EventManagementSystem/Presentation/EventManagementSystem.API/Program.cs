@@ -53,7 +53,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Event Management System API",
         Version = "v1",
-        Description = "A .NET 9 Minimal API for Event Management System",
+        Description = "A .NET 9 Minimal API for Event Management System - CalVender",
     });
 
     // Add JWT authentication to Swagger
@@ -232,8 +232,6 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, DebugTokenHandler>();
 
-
-
 // Set up MediatR and validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddMediatR(cfg =>
@@ -262,6 +260,9 @@ builder.Services.AddScoped<IRepository<Event>, GenericRepository<Event>>();
 builder.Services.AddScoped<IRepository<EventRegistration>, GenericRepository<EventRegistration>>();
 builder.Services.AddScoped<IExtendedEventsRepository, ExtendedEventsRepository>();
 builder.Services.AddScoped<IRepository<EventImage>, GenericRepository<EventImage>>();
+//builder.Services.AddScoped<IRepository<RefreshToken>, GenericRepository<RefreshToken>>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
 // Add this if not already present
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
