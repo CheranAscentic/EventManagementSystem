@@ -10,11 +10,16 @@ namespace EventManagementSystem.Application.Usecases.AdminRegistration
     {
         private readonly IAppUserService appUserService;
         private readonly ILogger<AdminRegistrationCommandHandler> logger;
+        private readonly IUnitOfWork unitOfWork;
 
-        public AdminRegistrationCommandHandler(IAppUserService appUserService, ILogger<AdminRegistrationCommandHandler> logger)
+        public AdminRegistrationCommandHandler(
+            IAppUserService appUserService,
+            ILogger<AdminRegistrationCommandHandler> logger,
+            IUnitOfWork unitOfWork)
         {
             this.appUserService = appUserService;
             this.logger = logger;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<Result<AppUser>> Handle(AdminRegistrationCommand command, CancellationToken cancellationToken = default)

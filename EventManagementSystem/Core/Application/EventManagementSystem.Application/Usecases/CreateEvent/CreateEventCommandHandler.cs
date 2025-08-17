@@ -19,6 +19,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
         private readonly IConfiguration configuration;
         private readonly ICurrentUserService currentUserService;
         private readonly IFileStorageService fileStorageService;
+        private readonly IAppUserService appUserService;
 
         public CreateEventCommandHandler(
             IRepository<Event> eventRepository,
@@ -27,7 +28,8 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             ILogger<CreateEventCommandHandler> logger,
             IConfiguration configuration,
             ICurrentUserService currentUserService,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IAppUserService appUserService)
         {
             this.repository = eventRepository;
             this.eventImageRepository = eventImageRepository;
@@ -36,6 +38,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
             this.configuration = configuration;
             this.currentUserService = currentUserService;
             this.fileStorageService = fileStorageService;
+            this.appUserService = appUserService;
         }
 
         public async Task<Result<Event>> Handle(CreateEventCommand command, CancellationToken cancellationToken = default)
@@ -57,6 +60,10 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
                 return Result<Event>.Failure("Event creation failed", null, 403, "Only admins can create events.");
             }
 
+            // Get admin user details to set AdminName
+            var adminUser = await this.appUserService.GetUserAsync(currentUserId.Value.ToString());
+            var adminName = adminUser?.UserName ?? string.Empty;
+
             var newEvent = new Event
             {
                 Id = Guid.NewGuid(),
@@ -69,6 +76,7 @@ namespace EventManagementSystem.Application.Usecases.CreateEvent
                 RegistrationCutoffDate = command.RegistrationCutoffDate,
                 IsOpenForRegistration = true,
                 AdminId = currentUserId.Value, // Set the admin ID from current user
+                AdminName = adminName,
             };
 
             await this.repository.AddAsync(newEvent);

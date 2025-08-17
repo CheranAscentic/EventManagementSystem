@@ -34,4 +34,8 @@
     <ProjectReference Include="..\..\..\Core\Domain\EventManagementSystem.Domain\EventManagementSystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
+
 </Project>
