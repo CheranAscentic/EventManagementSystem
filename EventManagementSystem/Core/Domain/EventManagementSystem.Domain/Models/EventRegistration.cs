@@ -44,7 +44,7 @@ namespace EventManagementSystem.Domain.Models
             };
         }
 
-        public class EventRegistrationDTO
+        public class EventRegistrationDTO : IsDto
         {
             public Guid Id { get; set; }
 

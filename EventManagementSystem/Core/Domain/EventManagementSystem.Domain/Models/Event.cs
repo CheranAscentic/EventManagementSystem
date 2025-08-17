@@ -10,6 +10,8 @@ namespace EventManagementSystem.Domain.Models
 
         public Guid AdminId { get; set; }
 
+        public string AdminName { get; set; }
+
         public string Title { get; set; } = null!;
 
         public string Description { get; set; } = null!;
@@ -57,6 +59,7 @@ namespace EventManagementSystem.Domain.Models
                 NoOfRegistrations = this.NoOfRegistrations,
                 ImageUrl = this.Image?.ImageUrl ?? string.Empty,
                 RegisteredIds = this.Registrations?.Select(r => r.UserId).ToList(),
+                Owner = this.AdminName,
             };
         }
 
