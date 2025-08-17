@@ -22,7 +22,7 @@ namespace EventManagementSystem.Persistence.Configurations
 
             // Ignore cross-context navigation property
             // User navigation property references AppUser which is in IdentityDbContext
-            builder.Ignore(r => r.User);
+            //builder.Ignore(r => r.User);
         }
     }
 }

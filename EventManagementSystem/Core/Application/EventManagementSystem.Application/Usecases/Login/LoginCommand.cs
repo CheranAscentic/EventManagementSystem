@@ -3,7 +3,7 @@ namespace EventManagementSystem.Application.Usecases.Login
     using EventManagementSystem.Application.DTO;
     using MediatR;
 
-    public class LoginCommand : IRequest<Result<LoginDTO>>
+    public class LoginCommand : IRequest<Result<CredentialsDTO>>
     {
         public LoginCommand(string email, string password)
         {

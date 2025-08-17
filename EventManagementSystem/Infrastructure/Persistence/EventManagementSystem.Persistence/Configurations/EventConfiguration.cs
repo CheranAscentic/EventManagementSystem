@@ -17,10 +17,11 @@ namespace EventManagementSystem.Persistence.Configurations
             builder.Property(e => e.IsOpenForRegistration).IsRequired();
             builder.Property(e => e.RegistrationCutoffDate).IsRequired();
             builder.Property(e => e.AdminId).IsRequired();
+            builder.Property(e => e.AdminName).IsRequired().HasMaxLength(200);
 
             // Ignore computed properties and cross-context navigation properties
             builder.Ignore(e => e.NoOfRegistrations);
-            builder.Ignore(e => e.AdminUser); // AdminUser is in IdentityDbContext, cannot create FK relationship
+            //builder.Ignore(e => e.AdminUser); // AdminUser is in IdentityDbContext, cannot create FK relationship
 
             builder.HasOne(e => e.Image)
                 .WithOne(i => i.Event)

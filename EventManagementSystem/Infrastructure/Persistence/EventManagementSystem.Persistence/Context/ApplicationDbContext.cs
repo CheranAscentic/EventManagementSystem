@@ -1,6 +1,5 @@
 namespace EventManagementSystem.Persistence.Context
 {
-
     using EventManagementSystem.Domain.Models;
     using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +16,8 @@ namespace EventManagementSystem.Persistence.Context
 
         public DbSet<EventImage> EventImages { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -24,6 +25,7 @@ namespace EventManagementSystem.Persistence.Context
             builder.ApplyConfiguration(new Configurations.EventConfiguration());
             builder.ApplyConfiguration(new Configurations.EventRegistrationConfiguration());
             builder.ApplyConfiguration(new Configurations.EventImageConfiguration());
+            builder.ApplyConfiguration(new Configurations.RefreshTokenConfiguration());
         }
     }
 }
